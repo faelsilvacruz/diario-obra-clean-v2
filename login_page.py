@@ -2,35 +2,40 @@ import streamlit as st
 import sqlite3
 import hashlib
 
-# ======= Funções de Hash =======
+# Funções de hash
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def check_hashes(password, hashed_text):
     return make_hashes(password) == hashed_text
 
-# ======= Conexão com o Banco de Dados =======
-conn = sqlite3.connect('users.db')
-c = conn.cursor()
-
-# ======= Função para Login =======
+# Função para login
 def login_user(username, password):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
     c.execute('SELECT * FROM userstable WHERE username =? AND password = ?', (username, password))
     data = c.fetchall()
+    conn.close()
     return data
 
-# ======= Função para Adicionar Usuário (usada na tela de gerenciamento de usuários) =======
+# Função para adicionar novo usuário
 def add_userdata(username, password, role):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
     c.execute('INSERT INTO userstable(username, password, role) VALUES (?,?,?)', (username, password, role))
     conn.commit()
+    conn.close()
 
-# ======= Função para Listar Todos os Usuários =======
+# Função para visualizar todos os usuários
 def view_all_users():
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
     c.execute('SELECT * FROM userstable')
     data = c.fetchall()
+    conn.close()
     return data
 
-# ======= Página de Login =======
+# Interface da página de login
 def render_login_page():
     st.markdown(
         """
@@ -79,15 +84,15 @@ def render_login_page():
             hashed_pswd = make_hashes(password)
             result = login_user(username, hashed_pswd)
             if result:
-                st.success(f'Bem-vindo, {username}! Login realizado com sucesso.')
-                st.session_state["username"] = username
-                st.session_state["logged_in"] = True
-                st.rerun()
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.role = result[0][2]  # Pega o campo de role da tabela
+                st.experimental_rerun()
             else:
                 st.error('Usuário ou senha inválidos.')
 
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="logo-rodape">', unsafe_allow_html=True)
-    st.image('LOGO_RDV_AZUL.png', use_container_width=True)
+    st.image('logo_rdv.png', use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)

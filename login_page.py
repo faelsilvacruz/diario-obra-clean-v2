@@ -2,20 +2,35 @@ import streamlit as st
 import sqlite3
 import hashlib
 
+# ======= Funções de Hash =======
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def check_hashes(password, hashed_text):
     return make_hashes(password) == hashed_text
 
+# ======= Conexão com o Banco de Dados =======
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
 
+# ======= Função para Login =======
 def login_user(username, password):
     c.execute('SELECT * FROM userstable WHERE username =? AND password = ?', (username, password))
     data = c.fetchall()
     return data
 
+# ======= Função para Adicionar Usuário (usada na tela de gerenciamento de usuários) =======
+def add_userdata(username, password, role):
+    c.execute('INSERT INTO userstable(username, password, role) VALUES (?,?,?)', (username, password, role))
+    conn.commit()
+
+# ======= Função para Listar Todos os Usuários =======
+def view_all_users():
+    c.execute('SELECT * FROM userstable')
+    data = c.fetchall()
+    return data
+
+# ======= Página de Login =======
 def render_login_page():
     st.markdown(
         """

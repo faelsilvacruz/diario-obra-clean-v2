@@ -1,30 +1,32 @@
-import streamlit as st
-from login_page import render_login_page
-from user_management_page import render_user_management_page
-from diario_obra_page import render_diario_obra_page
-from holerite_page import render_holerite_page
-from init_db import init_db  # <<< Incluímos de novo o INIT_DB
+import sqlite3
+from login_page import make_hashes
 
-st.set_page_config(page_title="Sistema RDV", layout="centered")
+def init_db():
+    # Criar users.db
+    conn_users = sqlite3.connect('users.db')
+    c_users = conn_users.cursor()
+    c_users.execute('CREATE TABLE IF NOT EXISTS userstable(username TEXT, password TEXT, role TEXT)')
 
-# Botão temporário para rodar o INIT_DB
-if st.sidebar.button("Rodar INIT_DB"):
-    init_db()
-    st.success("Bancos criados com sucesso!")
+    # Inserir usuário admin com senha hash de 'abc123'
+    hashed_password = make_hashes("abc123")
+    c_users.execute('INSERT INTO userstable VALUES (?, ?, ?)', ("admin", hashed_password, "admin"))
 
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
+    conn_users.commit()
+    conn_users.close()
 
-if not st.session_state.logged_in:
-    render_login_page()
-    st.stop()
+    # Criar holerites.db
+    conn_holerite = sqlite3.connect('holerites.db')
+    c_holerite = conn_holerite.cursor()
+    c_holerite.execute('''
+        CREATE TABLE IF NOT EXISTS holerites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome_colaborador TEXT,
+            mes TEXT,
+            ano TEXT,
+            link_google_drive TEXT
+        )
+    ''')
+    conn_holerite.commit()
+    conn_holerite.close()
 
-menu_options = ["Diário de Obra", "Holerite", "Gerenciamento de Usuários"]
-selected = st.sidebar.selectbox("Menu", menu_options)
-
-if selected == "Diário de Obra":
-    render_diario_obra_page()
-elif selected == "Holerite":
-    render_holerite_page()
-elif selected == "Gerenciamento de Usuários":
-    render_user_management_page()
+    print("Bancos criados com sucesso!")

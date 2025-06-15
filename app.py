@@ -3,10 +3,11 @@ from login_page import render_login_page
 from user_management_page import render_user_management_page
 from diario_obra_page import render_diario_obra_page
 from holerite_page import render_holerite_page
-from init_db import *
+from init_db import init_db
 
 st.set_page_config(page_title="Sistema RDV", layout="centered")
 
+# Botão TEMPORÁRIO para rodar o INIT_DB (Depois pode apagar!)
 if st.sidebar.button("Rodar INIT_DB"):
     init_db()
     st.success("Bancos criados com sucesso!")

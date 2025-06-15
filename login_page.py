@@ -86,8 +86,8 @@ def render_login_page():
             if result:
                 st.session_state.logged_in = True
                 st.session_state.username = username
-                st.session_state.role = result[0][2]  # Pega o campo de role da tabela
-                st.experimental_rerun()
+                st.session_state.role = result[0][2]
+                st.rerun()  # <-- aqui o ajuste
             else:
                 st.error('Usuário ou senha inválidos.')
 

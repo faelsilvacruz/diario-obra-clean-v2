@@ -22,7 +22,7 @@ selected = st.sidebar.selectbox("Menu", menu_options)
 # Botão de logout
 if st.sidebar.button("Logout"):
     st.session_state.logged_in = False
-    st.experimental_rerun()
+    st.rerun()
 
 # Renderiza a página conforme seleção
 if selected == "Diário de Obra":

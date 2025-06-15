@@ -7,3 +7,4 @@ reportlab
 pillow
 yagmail
 fpdf
+google-auth-httplib2

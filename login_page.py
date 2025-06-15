@@ -89,5 +89,5 @@ def render_login_page():
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="logo-rodape">', unsafe_allow_html=True)
-    st.image('LOGO_RDV.png', use_container_width=True)
+    st.image('LOGO_RDV_AZUL.png', use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)

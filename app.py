@@ -3,7 +3,8 @@ from login_page import render_login_page, render_password_change_page
 from diario_obra_page import render_diario_obra_page
 from documentos_colaborador_page import render_documentos_colaborador_page
 from user_management_page import render_user_management_page
-from backup_page import render_backup_page  # <<< Importando nova página
+from backup_page import render_backup_page
+from inspecionar_banco_page import render_inspecionar_banco_page  # <<< NOVO
 
 def logout():
     for key in list(st.session_state.keys()):
@@ -11,7 +12,6 @@ def logout():
     st.rerun()
 
 def render_menu_lateral():
-    st.sidebar.write("DEBUG - Role atual:", st.session_state.role)
     st.markdown("""
         <style>
             section[data-testid="stSidebar"] {
@@ -50,6 +50,10 @@ def render_menu_lateral():
 
         if st.sidebar.button("💾 Backup Banco de Usuários"):
             st.session_state.page = "backup"
+            st.rerun()
+
+        if st.sidebar.button("🔎 Inspecionar Banco"):
+            st.session_state.page = "inspecionar"
             st.rerun()
 
     if st.sidebar.button("🚪 Sair"):
@@ -96,6 +100,12 @@ def main():
         elif page == "backup":
             if st.session_state.role == "admin":
                 render_backup_page()
+            else:
+                st.error("Acesso restrito ao administrador.")
+
+        elif page == "inspecionar":
+            if st.session_state.role == "admin":
+                render_inspecionar_banco_page()
             else:
                 st.error("Acesso restrito ao administrador.")
 

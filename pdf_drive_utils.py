@@ -18,104 +18,110 @@ LOGO_PDF_PATH = "LOGO_RDV_AZUL-sem fundo.png"
 
 def gerar_pdf(registro, fotos_paths):
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-    margem = 30
-    y = height - margem
+    try:
+        c = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+        margem = 30
+        y = height - margem
 
-    def linha(texto, tamanho=10, negrito=False, espaco=15):
-        nonlocal y
-        if y < 50:
+        def linha(texto, tamanho=10, negrito=False, espaco=15):
+            nonlocal y
+            if y < 50:
+                c.showPage()
+                y = height - margem
+            c.setFont("Helvetica-Bold" if negrito else "Helvetica", tamanho)
+            c.drawString(margem, y, texto)
+            y -= espaco
+
+        # Logo
+        if os.path.exists(LOGO_PDF_PATH):
+            try:
+                logo = ImageReader(LOGO_PDF_PATH)
+                c.drawImage(logo, margem, y - 50, width=120, height=40, mask='auto')
+            except Exception as e:
+                print(f"Erro ao inserir logo: {e}")
+
+        y -= 60
+        linha("DIÁRIO DE OBRA", tamanho=14, negrito=True, espaco=20)
+
+        campos_cabecalho = ["Obra", "Local", "Data", "Contrato", "Clima"]
+        for campo in campos_cabecalho:
+            valor = registro.get(campo, "")
+            if valor:
+                linha(f"{campo.upper()}: {valor}", tamanho=10, negrito=True)
+
+        linha("")
+        linha("Máquinas e Equipamentos:", negrito=True)
+        linha(registro.get("Máquinas", " - "))
+
+        linha("")
+        linha("Serviços Executados:", negrito=True)
+        linha(registro.get("Serviços", " - "), tamanho=10, espaco=15)
+
+        colaboradores = registro.get("Colaboradores", [])
+        if colaboradores:
+            linha("")
+            linha("NOME              FUNÇÃO              ENTRADA   SAÍDA", tamanho=10, negrito=True)
+            for colab in colaboradores:
+                nome = colab.get("Nome", "")
+                funcao = colab.get("Função", "")
+                entrada = colab.get("Entrada", "")
+                saida = colab.get("Saída", "")
+                linha(f"{nome:<20} {funcao:<20} {entrada:<8} {saida:<8}", tamanho=9, espaco=12)
+
+        linha("")
+        linha("Controle de Documentação de Segurança:", negrito=True)
+        linha(f"Hora de Liberação da LT: {registro.get('Hora_LT', '')}")
+        linha(f"Hora de Liberação da APR: {registro.get('Hora_APR', '')}")
+        linha(f"Data da APR vigente: {registro.get('Data_APR', '')}")
+        linha(f"Número/Código da APR: {registro.get('Codigo_APR', '')}")
+
+        linha("")
+        linha("Ocorrências:", negrito=True)
+        linha(registro.get("Ocorrencias", " - "), tamanho=10, espaco=15)
+
+        linha("")
+        linha("Responsável Técnico", negrito=True)
+        linha(f"Nome: {registro.get('Responsavel', '')}")
+
+        linha("")
+        linha("Fiscalização", negrito=True)
+        linha(f"Nome: {registro.get('Fiscalizacao', '')}")
+
+        c.setFont("Helvetica-Oblique", 7)
+        c.setFillColor(lightgrey)
+        c.drawRightString(width - margem, margem, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+        if fotos_paths:
             c.showPage()
             y = height - margem
-        c.setFont("Helvetica-Bold" if negrito else "Helvetica", tamanho)
-        c.drawString(margem, y, texto)
-        y -= espaco
+            linha("REGISTRO FOTOGRÁFICO", tamanho=12, negrito=True, espaco=20)
+            for foto_path in fotos_paths:
+                try:
+                    img = PILImage.open(foto_path)
+                    img_width, img_height = img.size
+                    aspect = img_height / img_width
+                    max_width = width - 2 * margem
+                    max_height = 400
+                    final_width = max_width
+                    final_height = final_width * aspect
+                    if final_height > max_height:
+                        final_height = max_height
+                        final_width = final_height / aspect
+                    if y - final_height < margem:
+                        c.showPage()
+                        y = height - margem
+                    c.drawImage(foto_path, margem, y - final_height, width=final_width, height=final_height)
+                    y -= final_height + 20
+                except Exception as e:
+                    print(f"Erro ao adicionar foto: {e}")
 
-    try:
-        if os.path.exists(LOGO_PDF_PATH):
-            logo = ImageReader(LOGO_PDF_PATH)
-            c.drawImage(logo, margem, y - 50, width=120, height=40, mask='auto')
+        c.save()
+        buffer.seek(0)
+        return buffer
     except Exception as e:
-        print(f"Erro ao inserir logo: {e}")
-
-    y -= 60
-    linha("DIÁRIO DE OBRA", tamanho=14, negrito=True, espaco=20)
-
-    for campo in ["Obra", "Local", "Data", "Contrato", "Clima"]:
-        valor = registro.get(campo, "")
-        if valor:
-            linha(f"{campo.upper()}: {valor}", tamanho=10, negrito=True)
-
-    linha("")
-    linha("Máquinas e Equipamentos:", negrito=True)
-    linha(registro.get("Máquinas", " - "))
-
-    linha("")
-    linha("Serviços Executados:", negrito=True)
-    linha(registro.get("Serviços", " - "), tamanho=10, espaco=15)
-
-    colaboradores = registro.get("Colaboradores", [])
-    if colaboradores:
-        linha("")
-        linha("NOME              FUNÇÃO              ENTRADA   SAÍDA", tamanho=10, negrito=True)
-        for colab in colaboradores:
-            nome = colab.get("Nome", "")
-            funcao = colab.get("Função", "")
-            entrada = colab.get("Entrada", "")
-            saida = colab.get("Saída", "")
-            linha(f"{nome:<20} {funcao:<20} {entrada:<8} {saida:<8}", tamanho=9, espaco=12)
-
-    linha("")
-    linha("Controle de Documentação de Segurança:", negrito=True)
-    linha(f"Hora de Liberação da LT: {registro.get('Hora_LT', '')}")
-    linha(f"Hora de Liberação da APR: {registro.get('Hora_APR', '')}")
-    linha(f"Data da APR vigente: {registro.get('Data_APR', '')}")
-    linha(f"Número/Código da APR: {registro.get('Codigo_APR', '')}")
-
-    linha("")
-    linha("Ocorrências:", negrito=True)
-    linha(registro.get("Ocorrencias", " - "), tamanho=10, espaco=15)
-
-    linha("")
-    linha("Responsável Técnico", negrito=True)
-    linha(f"Nome: {registro.get('Responsavel', '')}")
-
-    linha("")
-    linha("Fiscalização", negrito=True)
-    linha(f"Nome: {registro.get('Fiscalizacao', '')}")
-
-    c.setFont("Helvetica-Oblique", 7)
-    c.setFillColor(lightgrey)
-    c.drawRightString(width - margem, margem, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-
-    if fotos_paths:
-        c.showPage()
-        y = height - margem
-        linha("REGISTRO FOTOGRÁFICO", tamanho=12, negrito=True, espaco=20)
-        for foto_path in fotos_paths:
-            try:
-                img = PILImage.open(foto_path)
-                img_width, img_height = img.size
-                aspect = img_height / img_width
-                max_width = width - 2 * margem
-                max_height = 400
-                final_width = max_width
-                final_height = final_width * aspect
-                if final_height > max_height:
-                    final_height = max_height
-                    final_width = final_height / aspect
-                if y - final_height < margem:
-                    c.showPage()
-                    y = height - margem
-                c.drawImage(foto_path, margem, y - final_height, width=final_width, height=final_height)
-                y -= final_height + 20
-            except Exception as e:
-                print(f"Erro ao adicionar foto: {e}")
-
-    c.save()
-    buffer.seek(0)
-    return buffer
+        print(f"Erro ao gerar PDF: {e}")
+        return None
 
 def gerar_pdf_holerite(registro):
     buffer = io.BytesIO()

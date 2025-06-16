@@ -118,23 +118,18 @@ def render_diario_obra_page():
             st.error("Preencha o campo Responsável pela empresa.")
             st.stop()
 
-        registro = {
-            "Obra": obra,
-            "Local": local,
-            "Data": data.strftime("%d/%m/%Y"),
-            "Contrato": contrato,
-            "Clima": clima,
-            "Máquinas": maquinas,
-            "Serviços": servicos,
-            "Efetivo": json.dumps(efetivo_lista, ensure_ascii=False),
-            "Hora LT": hora_lt.strftime("%H:%M"),
-            "Hora APR": hora_apr.strftime("%H:%M"),
-            "Data APR": data_apr.strftime("%d/%m/%Y"),
-            "Numero APR": numero_apr,
-            "Ocorrências": ocorrencias,
-            "Responsável Empresa": nome_empresa,
-            "Fiscalização": nome_fiscal
-        }
+        pdf_buffer = gerar_pdf(
+            registro["dados_obra"],
+            registro["colaboradores"],
+            registro["maquinas"],
+            registro["servicos"],
+            registro["controle_doc"],
+            registro["intercorrencias"],
+            registro["responsavel"],
+            registro["fiscal"],
+            registro["clima"],
+            fotos_processed_paths
+        )
 
         with st.spinner("Processando fotos..."):
             fotos_processed_paths = processar_fotos(fotos, obra, data) if fotos else []

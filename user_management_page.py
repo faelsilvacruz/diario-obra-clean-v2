@@ -46,7 +46,12 @@ def delete_user(username):
 def render_user_management_page():
     st.title("👥 Gerenciamento de Usuários")
 
-    aba = st.radio("Selecione uma ação:", ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"])
+    if "user_aba" not in st.session_state:
+        st.session_state.user_aba = "Listar Usuários"
+
+    aba = st.radio("Selecione uma ação:", ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"], index=["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"].index(st.session_state.user_aba))
+
+    st.session_state.user_aba = aba
 
     if aba == "Listar Usuários":
         st.subheader("📋 Lista de Usuários")
@@ -57,33 +62,45 @@ def render_user_management_page():
 
     elif aba == "Adicionar Usuário":
         st.subheader("➕ Adicionar Novo Usuário")
-        novo_user = st.text_input("Nome de Usuário")
-        nova_senha = st.text_input("Senha", type="password")
-        novo_role = st.selectbox("Perfil", ["admin", "encarregado", "colaborador"])
+        novo_user = st.text_input("Nome de Usuário", key="new_user")
+        nova_senha = st.text_input("Senha", type="password", key="new_pass")
+        novo_role = st.selectbox("Perfil", ["admin", "encarregado", "colaborador"], key="new_role")
         if st.button("Salvar Novo Usuário"):
             if novo_user and nova_senha:
                 add_user(novo_user, nova_senha, novo_role)
                 st.success(f"Usuário '{novo_user}' adicionado com sucesso!")
+                st.session_state.user_aba = "Listar Usuários"
+                st.experimental_rerun()
             else:
                 st.error("Por favor, preencha todos os campos.")
 
     elif aba == "Editar Usuário":
         st.subheader("✏️ Editar Usuário Existente")
         usuarios = [u[0] for u in view_all_users()]
-        usuario_alvo = st.selectbox("Selecione o Usuário", usuarios)
-        nova_senha = st.text_input("Nova Senha (deixe em branco para manter a atual)", type="password")
-        novo_role = st.selectbox("Novo Perfil", ["admin", "encarregado", "colaborador"])
-        if st.button("Atualizar Usuário"):
-            update_user(usuario_alvo, nova_senha, novo_role)
-            st.success(f"Usuário '{usuario_alvo}' atualizado com sucesso!")
+        if usuarios:
+            usuario_alvo = st.selectbox("Selecione o Usuário", usuarios)
+            nova_senha = st.text_input("Nova Senha (deixe em branco para manter a atual)", type="password", key="edit_pass")
+            novo_role = st.selectbox("Novo Perfil", ["admin", "encarregado", "colaborador"], key="edit_role")
+            if st.button("Atualizar Usuário"):
+                update_user(usuario_alvo, nova_senha, novo_role)
+                st.success(f"Usuário '{usuario_alvo}' atualizado com sucesso!")
+                st.session_state.user_aba = "Listar Usuários"
+                st.experimental_rerun()
+        else:
+            st.warning("Nenhum usuário encontrado.")
 
     elif aba == "Excluir Usuário":
         st.subheader("❌ Excluir Usuário")
         usuarios = [u[0] for u in view_all_users()]
-        usuario_delete = st.selectbox("Selecione o Usuário", usuarios)
-        if st.button(f"Excluir '{usuario_delete}'"):
-            delete_user(usuario_delete)
-            st.success(f"Usuário '{usuario_delete}' excluído com sucesso!")
+        if usuarios:
+            usuario_delete = st.selectbox("Selecione o Usuário", usuarios, key="delete_user")
+            if st.button(f"Excluir '{usuario_delete}'"):
+                delete_user(usuario_delete)
+                st.success(f"Usuário '{usuario_delete}' excluído com sucesso!")
+                st.session_state.user_aba = "Listar Usuários"
+                st.experimental_rerun()
+        else:
+            st.warning("Nenhum usuário encontrado.")
 
     elif aba == "Status de Troca de Senha":
         st.subheader("🔑 Status de Troca de Senha")

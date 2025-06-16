@@ -2,14 +2,13 @@ import streamlit as st
 from login_page import render_login_page
 from diario_obra_page import render_diario_obra_page
 from documentos_colaborador_page import render_documentos_colaborador_page
+from user_management_page import render_user_management_page
 
-# ======= Função: Resetar sessão =======
 def logout():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
 
-# ======= Função: Menu lateral customizado =======
 def render_menu_lateral():
     st.markdown("""
         <style>
@@ -41,7 +40,7 @@ def render_menu_lateral():
         </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.image("LOGO_RDV_AZUL.png", width=200)
+    st.sidebar.image("logo_rdv.png", width=200)
     st.sidebar.markdown(f'<div class="sidebar-title">Menu Principal</div>', unsafe_allow_html=True)
     st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.username}</b></div>', unsafe_allow_html=True)
 
@@ -61,7 +60,6 @@ def render_menu_lateral():
     if st.sidebar.button("🚪 Sair"):
         logout()
 
-# ======= Função principal =======
 def main():
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
@@ -81,8 +79,7 @@ def main():
 
         elif page == "usuarios":
             if st.session_state.role == "admin":
-                st.title("👥 Gerenciamento de Usuários")
-                st.info("Módulo de gerenciamento ainda será desenvolvido.")
+                render_user_management_page()
             else:
                 st.error("Acesso restrito ao administrador.")
 

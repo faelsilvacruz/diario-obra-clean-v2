@@ -11,7 +11,8 @@ def check_hashes(password, hashed_text):
 def login_user(username, password):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    c.execute('SELECT * FROM userstable WHERE username =? AND password = ?', (username, password))
+    # Selecionando os campos de forma explícita e ordenada
+    c.execute('SELECT username, password, role, senha_alterada FROM userstable WHERE username =? AND password = ?', (username, password))
     data = c.fetchall()
     conn.close()
     return data

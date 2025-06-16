@@ -1,5 +1,5 @@
 import streamlit as st
-from login_page import render_login_page
+from login_page import render_login_page, render_password_change_page
 from diario_obra_page import render_diario_obra_page
 from documentos_colaborador_page import render_documentos_colaborador_page
 from user_management_page import render_user_management_page
@@ -26,17 +26,6 @@ def render_menu_lateral():
                 font-size: 14px;
                 margin-bottom: 10px;
             }
-            .sidebar-link {
-                color: white;
-                text-decoration: none;
-                display: block;
-                margin: 10px 0;
-                font-size: 16px;
-                cursor: pointer;
-            }
-            .sidebar-link:hover {
-                text-decoration: underline;
-            }
         </style>
     """, unsafe_allow_html=True)
 
@@ -61,7 +50,6 @@ def render_menu_lateral():
         logout()
 
 def main():
-    # ======= CSS Global para Fundo Azul Escuro na Área Principal =======
     st.markdown("""
         <style>
         .main {
@@ -76,6 +64,10 @@ def main():
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
     else:
+        if st.session_state.get("page") == "alterar_senha":
+            render_password_change_page()
+            return
+
         render_menu_lateral()
 
         page = st.session_state.get("page", "documentos")

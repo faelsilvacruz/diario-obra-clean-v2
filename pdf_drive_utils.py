@@ -145,10 +145,9 @@ def gerar_pdf(registro, fotos_paths):
             except Exception as e:
                 print(f"Erro ao adicionar foto: {e}")
 
-    c.save()
-    buffer.seek(0)
-    return buffer
-
+        c.save()
+        buffer.seek(0)
+        return buffer
     except Exception as e:
         print(f"Erro ao gerar PDF: {e}")
         return None

@@ -7,7 +7,7 @@ from documentos_colaborador_page import render_documentos_colaborador_page
 def logout():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
-    st.experimental_rerun()
+    st.rerun()
 
 # ======= Função: Menu lateral customizado =======
 def render_menu_lateral():
@@ -47,16 +47,16 @@ def render_menu_lateral():
 
     if st.sidebar.button("📓 Diário de Obra"):
         st.session_state.page = "diario"
-        st.experimental_rerun()
+        st.rerun()
 
     if st.sidebar.button("📂 Central de Documentos"):
         st.session_state.page = "documentos"
-        st.experimental_rerun()
+        st.rerun()
 
     if st.session_state.role == "admin":
         if st.sidebar.button("👥 Gerenciamento de Usuários"):
             st.session_state.page = "usuarios"
-            st.experimental_rerun()
+            st.rerun()
 
     if st.sidebar.button("🚪 Sair"):
         logout()

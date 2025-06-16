@@ -15,6 +15,7 @@ if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.usuario = None
     st.session_state.perfil = None
+    st.session_state.page = "Login"
 
 def login():
     st.markdown("""
@@ -38,6 +39,7 @@ def login():
             st.session_state.logado = True
             st.session_state.usuario = usuario
             st.session_state.perfil = USERS[usuario]["perfil"]
+            st.session_state.page = "Home"
             st.experimental_rerun()
         else:
             st.error("Usuário ou senha inválidos.")
@@ -47,30 +49,32 @@ def logout():
     st.session_state.logado = False
     st.session_state.usuario = None
     st.session_state.perfil = None
+    st.session_state.page = "Login"
     st.experimental_rerun()
 
-# ======= Layout do Menu Lateral Estilizado =======
 def render_menu_lateral():
     st.markdown("""
         <style>
-            .css-1d391kg {background-color: #0F2A4D;}
-            .css-1d391kg .block-container {padding-top: 0;}
+            section[data-testid="stSidebar"] {
+                background-color: #0F2A4D;
+            }
             .sidebar-title {
                 color: white;
                 font-weight: bold;
-                font-size: 18px;
+                font-size: 20px;
                 margin-bottom: 20px;
             }
             .sidebar-user {
                 color: white;
                 font-size: 14px;
-                margin-bottom: 10px;
+                margin-bottom: 20px;
             }
             .sidebar-link {
                 color: white;
                 text-decoration: none;
                 display: block;
-                margin: 8px 0;
+                margin: 10px 0;
+                font-size: 16px;
             }
             .sidebar-link:hover {
                 text-decoration: underline;
@@ -82,38 +86,48 @@ def render_menu_lateral():
     st.sidebar.markdown(f'<div class="sidebar-title">Menu Principal</div>', unsafe_allow_html=True)
     st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.usuario}</b></div>', unsafe_allow_html=True)
 
-    opcoes = []
+    menu_html = ""
+
+    # Exibição dinâmica por perfil
     if st.session_state.perfil in ["admin", "encarregado"]:
-        opcoes.append("Diário de Obra")
-    opcoes.append("Central de Documentos")
+        menu_html += '<a class="sidebar-link" href="?page=Diario">📓 Diário de Obra</a>'
+    menu_html += '<a class="sidebar-link" href="?page=Documentos">📂 Central de Documentos</a>'
     if st.session_state.perfil == "admin":
-        opcoes.append("Gerenciamento de Usuários")
-    opcoes.append("Sair")
+        menu_html += '<a class="sidebar-link" href="?page=Usuarios">👥 Gerenciamento de Usuários</a>'
+    menu_html += '<a class="sidebar-link" href="?page=Sair">🚪 Sair</a>'
 
-    escolha = st.sidebar.radio("", opcoes)
-    return escolha
+    st.sidebar.markdown(menu_html, unsafe_allow_html=True)
 
-# ======= Fluxo Principal =======
-if not st.session_state.logado:
-    login()
-else:
-    escolha = render_menu_lateral()
+# ======= Roteamento =======
+def main():
+    if not st.session_state.logado:
+        login()
+    else:
+        render_menu_lateral()
 
-    if escolha == "Diário de Obra":
-        if st.session_state.perfil in ["admin", "encarregado"]:
-            render_diario_obra_page()
+        page = st.query_params.get("page") or st.session_state.page
+
+        if page == "Diario":
+            if st.session_state.perfil in ["admin", "encarregado"]:
+                render_diario_obra_page()
+            else:
+                st.error("Você não tem permissão para acessar o Diário de Obra.")
+
+        elif page == "Documentos":
+            render_documentos_colaborador_page()
+
+        elif page == "Usuarios":
+            if st.session_state.perfil == "admin":
+                st.title("👥 Gerenciamento de Usuários")
+                st.info("Em breve: módulo para cadastro e controle de usuários.")
+            else:
+                st.error("Acesso restrito ao administrador.")
+
+        elif page == "Sair":
+            logout()
+
         else:
-            st.error("Você não tem permissão para acessar o Diário de Obra.")
+            st.title("Bem-vindo ao Sistema RDV Engenharia")
 
-    elif escolha == "Central de Documentos":
-        render_documentos_colaborador_page()
-
-    elif escolha == "Gerenciamento de Usuários":
-        if st.session_state.perfil == "admin":
-            st.title("👥 Gerenciamento de Usuários")
-            st.info("Módulo de gerenciamento ainda será desenvolvido.")
-        else:
-            st.error("Acesso restrito ao administrador.")
-
-    elif escolha == "Sair":
-        logout()
+if __name__ == "__main__":
+    main()

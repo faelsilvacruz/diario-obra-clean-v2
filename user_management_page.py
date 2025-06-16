@@ -46,19 +46,16 @@ def delete_user(username):
 def render_user_management_page():
     st.title("👥 Gerenciamento de Usuários")
 
-    # Controle de qual aba está ativa
     if "user_aba" not in st.session_state:
         st.session_state.user_aba = "Listar Usuários"
 
-    # Apenas muda o valor da aba se o usuário selecionar algo novo
     aba = st.radio(
         "Selecione uma ação:",
         ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"],
-        key="aba_user",
-        index=["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"].index(st.session_state.user_aba)
+        index=["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"].index(st.session_state.user_aba),
+        key="aba_user"
     )
 
-    # Atualiza o estado da aba ativa
     st.session_state.user_aba = aba
 
     if aba == "Listar Usuários":
@@ -70,9 +67,9 @@ def render_user_management_page():
 
     elif aba == "Adicionar Usuário":
         st.subheader("➕ Adicionar Novo Usuário")
-        novo_user = st.text_input("Nome de Usuário", key="add_user")
-        nova_senha = st.text_input("Senha", type="password", key="add_pass")
-        novo_role = st.selectbox("Perfil", ["admin", "encarregado", "colaborador"], key="add_role")
+        novo_user = st.text_input("Nome de Usuário", key="new_user")
+        nova_senha = st.text_input("Senha", type="password", key="new_pass")
+        novo_role = st.selectbox("Perfil", ["admin", "encarregado", "colaborador"], key="new_role")
         if st.button("Salvar Novo Usuário"):
             if novo_user and nova_senha:
                 add_user(novo_user, nova_senha, novo_role)

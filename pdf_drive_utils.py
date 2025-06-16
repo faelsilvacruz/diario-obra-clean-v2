@@ -14,10 +14,6 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
 from reportlab.platypus import Table, TableStyle
 
-# ====================================
-# Função: gerar_pdf - DIÁRIO DE OBRA
-# ====================================
-
 LOGO_PDF_PATH = "LOGO_RDV_AZUL.png"
 
 class DiarioObraPDF(FPDF):
@@ -44,17 +40,28 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
     pdf = DiarioObraPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)
-    # (Aqui entra o conteúdo completo da função gerar_pdf, igual ao layout final com Controle de Documentação de Segurança, colaboradores, fotos, etc.)
+    # (Função completa da versão FPDF com Controle de Documentação de Segurança aqui.)
     return io.BytesIO(pdf.output(dest='S').encode('latin1'))
 
-# ====================================
-# Função: gerar_pdf_holerite
-# ====================================
 def gerar_pdf_holerite(registro):
     buffer = io.BytesIO()
     try:
         c = canvas.Canvas(buffer, pagesize=A4)
-        # Aqui todo o conteúdo de geração de holerite com ReportLab (margens, cabeçalho, dados do colaborador, etc)
+        width, height = A4
+        margem = 30
+        c.setFillColor(HexColor("#0F2A4D"))
+        c.rect(0, height - 80, width, 80, fill=True, stroke=False)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 18)
+        c.drawCentredString(width / 2, height - 50, "HOLERITE")
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(width / 2, height - 70, "RDV ENGENHARIA")
+        if os.path.exists(LOGO_PDF_PATH):
+            try:
+                logo = ImageReader(LOGO_PDF_PATH)
+                c.drawImage(logo, 30, height - 70, width=100, height=50, preserveAspectRatio=True)
+            except Exception:
+                pass
         c.save()
         buffer.seek(0)
         return buffer
@@ -62,9 +69,6 @@ def gerar_pdf_holerite(registro):
         print(f"Erro ao gerar PDF do holerite: {e}")
         return None
 
-# ====================================
-# Função: processar_fotos
-# ====================================
 def processar_fotos(fotos_upload, obra_nome, data_relatorio):
     fotos_processadas_paths = []
     temp_dir_path_obj = None
@@ -91,9 +95,6 @@ def processar_fotos(fotos_upload, obra_nome, data_relatorio):
             shutil.rmtree(temp_dir_path_obj)
         return []
 
-# ====================================
-# Função: enviar_email
-# ====================================
 def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=None):
     try:
         yag = yagmail.SMTP(

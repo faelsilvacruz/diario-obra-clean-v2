@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import json
 from datetime import datetime
 from pathlib import Path
 from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email
@@ -31,8 +30,6 @@ def render_diario_obra_page():
             colab_df["Função"] = colab_df["Função"].astype(str).str.strip()
             colab_df["Nome_Normalizado"] = colab_df["Nome"].str.lower().str.strip()
             colaboradores_lista = colab_df["Nome"].tolist()
-        else:
-            st.error("'colaboradores.csv' deve ter colunas 'Nome' e 'Função'.")
     except Exception as e:
         st.error(f"Erro ao carregar 'colaboradores.csv': {e}")
         colab_df = pd.DataFrame()
@@ -44,8 +41,6 @@ def render_diario_obra_page():
     contratos_lista = [""] + contratos_df["Nome"].tolist()
 
     st.title("Relatório Diário de Obra - RDV Engenharia")
-    st.subheader("Dados Gerais da Obra")
-
     obra = st.selectbox("Obra", obras_lista)
     local = st.text_input("Local")
     data = st.date_input("Data", datetime.today())
@@ -54,9 +49,7 @@ def render_diario_obra_page():
     maquinas = st.text_area("Máquinas e equipamentos utilizados")
     servicos = st.text_area("Serviços executados no dia")
 
-    st.markdown("---")
     st.subheader("Efetivo de Pessoal")
-
     max_colabs = len(colaboradores_lista) if colaboradores_lista else 8
     qtd_colaboradores = st.number_input("Quantos colaboradores hoje?", min_value=1, max_value=max_colabs, value=1, step=1)
     efetivo_lista = []
@@ -71,43 +64,26 @@ def render_diario_obra_page():
                     match = colab_df[colab_df["Nome_Normalizado"] == nome_normalizado]
                     if not match.empty:
                         funcao = match.iloc[0]["Função"].strip()
-
                 st.markdown(f"**Função:** {funcao if funcao else 'Selecione o colaborador'}")
                 col1, col2 = st.columns(2)
-                with col1:
-                    entrada = st.time_input("Entrada", value=datetime.strptime("08:00", "%H:%M").time(), key=f"colab_entrada_{i}")
-                with col2:
-                    saida = st.time_input("Saída", value=datetime.strptime("17:00", "%H:%M").time(), key=f"colab_saida_{i}")
+                entrada = col1.time_input("Entrada", value=datetime.strptime("08:00", "%H:%M").time(), key=f"entrada_{i}")
+                saida = col2.time_input("Saída", value=datetime.strptime("17:00", "%H:%M").time(), key=f"saida_{i}")
+                efetivo_lista.append([nome, funcao, entrada.strftime("%H:%M"), saida.strftime("%H:%M")])
 
-                efetivo_lista.append({
-                    "Nome": nome,
-                    "Função": funcao,
-                    "Entrada": entrada.strftime("%H:%M"),
-                    "Saída": saida.strftime("%H:%M")
-                })
-
-    st.markdown("---")
     st.subheader("Controle de Documentação de Segurança")
-
     col1, col2 = st.columns(2)
-    with col1:
-        hora_lt = st.time_input("Hora de Liberação da LT", value=datetime.strptime("07:00", "%H:%M").time())
-    with col2:
-        hora_apr = st.time_input("Hora de Liberação da APR", value=datetime.strptime("07:00", "%H:%M").time())
+    hora_lt = col1.time_input("Hora de Liberação da LT", value=datetime.strptime("07:00", "%H:%M").time())
+    hora_apr = col2.time_input("Hora de Liberação da APR", value=datetime.strptime("07:00", "%H:%M").time())
+    data_apr = st.date_input("Data da APR", value=datetime.today())
+    numero_apr = st.text_input("Número/Código da APR")
 
-    data_apr = st.date_input("Data de Emissão da APR", value=datetime.today())
-    numero_apr = st.text_input("Número ou Código da APR")
-
-    st.markdown("---")
     st.subheader("Informações Adicionais")
     ocorrencias = st.text_area("Ocorrências")
-    nome_empresa = st.text_input("Responsável pela empresa")
-    nome_fiscal = st.text_input("Nome da fiscalização")
+    nome_empresa = st.text_input("Responsável Técnico")
+    nome_fiscal = st.text_input("Fiscalização")
     fotos = st.file_uploader("Fotos do serviço", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
 
     if st.button("Salvar e Gerar Relatório"):
-        fotos_processed_paths = []
-
         if not obra:
             st.error("Por favor, selecione a Obra.")
             st.stop()
@@ -115,8 +91,32 @@ def render_diario_obra_page():
             st.error("Por favor, selecione o Contrato.")
             st.stop()
         if not nome_empresa:
-            st.error("Preencha o campo Responsável pela empresa.")
+            st.error("Preencha o campo Responsável Técnico.")
             st.stop()
+
+        controle_doc_texto = f"""Hora de Liberação da LT: {hora_lt.strftime('%H:%M')}
+Hora de Liberação da APR: {hora_apr.strftime('%H:%M')}
+Data da APR: {data_apr.strftime('%d/%m/%Y')}
+Número/Código da APR: {numero_apr}"""
+
+        fotos_processed_paths = processar_fotos(fotos, obra, data) if fotos else []
+
+        registro = {
+            "dados_obra": {
+                "obra": obra,
+                "local": local,
+                "data": data.strftime("%d/%m/%Y"),
+                "contrato": contrato
+            },
+            "colaboradores": efetivo_lista,
+            "maquinas": maquinas,
+            "servicos": servicos,
+            "controle_doc": controle_doc_texto,
+            "intercorrencias": ocorrencias,
+            "responsavel": nome_empresa,
+            "fiscal": nome_fiscal,
+            "clima": clima
+        }
 
         pdf_buffer = gerar_pdf(
             registro["dados_obra"],
@@ -131,17 +131,8 @@ def render_diario_obra_page():
             fotos_processed_paths
         )
 
-        with st.spinner("Processando fotos..."):
-            fotos_processed_paths = processar_fotos(fotos, obra, data) if fotos else []
+        nome_pdf = f"Diario_{obra.replace(' ', '_')}_{data.strftime('%Y-%m-%d')}.pdf"
 
-        with st.spinner("Gerando PDF..."):
-            nome_pdf = f"Diario_{obra.replace(' ', '_')}_{data.strftime('%Y-%m-%d')}.pdf"
-            pdf_buffer = gerar_pdf(registro, fotos_processed_paths)
-            if pdf_buffer is None:
-                st.error("Falha ao gerar o PDF.")
-                st.stop()
-
-        pdf_buffer.seek(0)
         st.download_button(
             label="📥 Baixar Relatório PDF",
             data=pdf_buffer,
@@ -150,18 +141,16 @@ def render_diario_obra_page():
             type="primary"
         )
 
-        with st.spinner("Enviando por e-mail..."):
-            assunto = f"Diário de Obra - {obra} ({data.strftime('%d/%m/%Y')})"
-            corpo = f"""
-            <p>Relatório diário gerado:</p>
-            <ul>
-                <li>Obra: {obra}</li>
-                <li>Data: {data.strftime('%d/%m/%Y')}</li>
-                <li>Responsável: {nome_empresa}</li>
-            </ul>
-            """
-            pdf_buffer.seek(0)
-            if enviar_email(["administrativo@rdvengenharia.com.br"], assunto, corpo, pdf_buffer, nome_pdf):
-                st.success("E-mail enviado com sucesso!")
-            else:
-                st.error("Falha ao enviar o e-mail.")
+        assunto = f"Diário de Obra - {obra} ({data.strftime('%d/%m/%Y')})"
+        corpo = f"""<p>Relatório diário gerado:</p>
+<ul>
+<li>Obra: {obra}</li>
+<li>Data: {data.strftime('%d/%m/%Y')}</li>
+<li>Responsável: {nome_empresa}</li>
+</ul>"""
+
+        pdf_buffer.seek(0)
+        if enviar_email(["administrativo@rdvengenharia.com.br"], assunto, corpo, pdf_buffer, nome_pdf):
+            st.success("E-mail enviado com sucesso!")
+        else:
+            st.error("Falha ao enviar o e-mail.")

@@ -1,18 +1,7 @@
 import os
 import io
 from datetime import datetime
-from pathlib import Path
-from PIL import Image as PILImage
 from fpdf import FPDF
-import tempfile
-import shutil
-import yagmail
-import streamlit as st
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
-from reportlab.platypus import Table, TableStyle
 
 LOGO_PDF_PATH = "LOGO_RDV_AZUL.png"
 
@@ -41,34 +30,37 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Dados da Obra
+    # --- Dados da Obra ---
     pdf.set_font('Arial', 'B', 11)
-    campos = [("OBRA:", dados_obra.get("obra", "")),
-              ("LOCAL:", dados_obra.get("local", "")),
-              ("DATA:", dados_obra.get("data", "")),
-              ("CONTRATO:", dados_obra.get("contrato", "")),
-              ("CLIMA:", clima)]
+    pdf.set_text_color(0, 0, 0)
+    campos = [
+        ("OBRA:", dados_obra.get("obra", "")),
+        ("LOCAL:", dados_obra.get("local", "")),
+        ("DATA:", dados_obra.get("data", "")),
+        ("CONTRATO:", dados_obra.get("contrato", "")),
+        ("CLIMA:", clima)
+    ]
     for rotulo, valor in campos:
         pdf.cell(25, 8, rotulo, 0, 0)
         pdf.set_font('Arial', '', 11)
         pdf.cell(80, 8, valor, 0, 1)
         pdf.set_font('Arial', 'B', 11)
 
-    # Serviços Executados
+    # --- Serviços Executados ---
     pdf.ln(3)
     pdf.set_fill_color(220, 230, 242)
     pdf.cell(0, 7, 'SERVIÇOS EXECUTADOS:', 0, 1, 'L', True)
     pdf.set_font('Arial', '', 10)
     pdf.multi_cell(0, 7, servicos.strip() if servicos.strip() else "Nenhum serviço informado.", 0, 1)
 
-    # Máquinas
+    # --- Máquinas e Equipamentos ---
     pdf.ln(2)
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'MÁQUINAS/EQUIPAMENTOS:', 0, 1, 'L', True)
     pdf.set_font('Arial', '', 10)
     pdf.multi_cell(0, 7, maquinas.strip() if maquinas.strip() else "Nenhuma máquina/equipamento informado.", 0, 1)
 
-    # Efetivo
+    # --- Efetivo de Pessoal ---
     pdf.ln(2)
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'EFETIVO DE PESSOAL', 0, 1, 'L', True)
@@ -89,7 +81,7 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
         pdf.ln()
     pdf.ln(2)
 
-    # Controle de Documentação
+    # --- Controle de Documentação de Segurança ---
     pdf.set_font('Arial', 'B', 11)
     pdf.set_fill_color(220, 230, 242)
     pdf.cell(0, 7, 'CONTROLE DE DOCUMENTAÇÃO DE SEGURANÇA:', 0, 1, 'L', True)
@@ -97,7 +89,7 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
     pdf.multi_cell(0, 7, controle_doc.strip() if controle_doc.strip() else "Não informado.", 0, 1)
     pdf.ln(2)
 
-    # Intercorrências
+    # --- Intercorrências ---
     pdf.set_font('Arial', 'B', 11)
     pdf.set_fill_color(220, 230, 242)
     pdf.cell(0, 7, 'INTERCORRÊNCIAS:', 0, 1, 'L', True)
@@ -105,28 +97,33 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
     pdf.multi_cell(0, 7, intercorrencias.strip() if intercorrencias.strip() else "Sem intercorrências.", 0, 1)
     pdf.ln(2)
 
-    # Assinaturas
+    # --- Assinaturas ---
     pdf.set_font('Arial', 'B', 11)
     pdf.set_fill_color(220, 230, 242)
     pdf.cell(0, 7, 'ASSINATURAS:', 0, 1, 'L', True)
     pdf.ln(10)
+
     largura_linha = 60
     distancia_entre = 45
-    x_inicio = (pdf.w - (2 * largura_linha + distancia_entre)) / 2
+    largura_total = (2 * largura_linha) + distancia_entre
+    x_inicio = (pdf.w - largura_total) / 2
     y_assin = pdf.get_y()
     pdf.set_draw_color(70, 70, 70)
     pdf.line(x_inicio, y_assin, x_inicio + largura_linha, y_assin)
     pdf.line(x_inicio + largura_linha + distancia_entre, y_assin, x_inicio + 2 * largura_linha + distancia_entre, y_assin)
+
+    espaco_vertical = 3
     pdf.set_font('Arial', '', 11)
-    pdf.set_xy(x_inicio, y_assin + 3)
+    pdf.set_xy(x_inicio, y_assin + espaco_vertical)
     pdf.cell(largura_linha, 7, "Responsável Técnico:", 0, 2, 'C')
     pdf.cell(largura_linha, 7, f"Nome: {responsavel}", 0, 0, 'C')
-    pdf.set_xy(x_inicio + largura_linha + distancia_entre, y_assin + 3)
+
+    pdf.set_xy(x_inicio + largura_linha + distancia_entre, y_assin + espaco_vertical)
     pdf.cell(largura_linha, 7, "Fiscalização:", 0, 2, 'C')
     pdf.cell(largura_linha, 7, f"Nome: {fiscal}", 0, 0, 'C')
     pdf.ln(20)
 
-    # Fotos
+    # --- Fotos (cada uma em nova página) ---
     if fotos_paths:
         for path in fotos_paths:
             if os.path.exists(path):
@@ -136,7 +133,72 @@ def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, inter
                 pdf.image(path, x=30, w=150)
 
     return io.BytesIO(pdf.output(dest='S').encode('latin1'))
+def gerar_pdf_holerite(registro):
+    buffer = io.BytesIO()
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        from reportlab.lib.colors import HexColor, white, black
+        from reportlab.platypus import Table, TableStyle
 
+        c = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+        margem = 30
+
+        # Cabeçalho azul
+        c.setFillColor(HexColor("#0F2A4D"))
+        c.rect(0, height - 80, width, 80, fill=True, stroke=False)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 18)
+        c.drawCentredString(width / 2, height - 50, "HOLERITE")
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(width / 2, height - 70, "RDV ENGENHARIA")
+
+        # Logo se existir
+        if os.path.exists(LOGO_PDF_PATH):
+            try:
+                logo = ImageReader(LOGO_PDF_PATH)
+                c.drawImage(logo, 30, height - 70, width=100, height=50, preserveAspectRatio=True)
+            except Exception:
+                pass
+
+        y = height - 100
+
+        # Dados do holerite
+        info_data = [
+            ["Nome:", registro.get("Nome", "N/A")],
+            ["Matrícula:", registro.get("Matricula", "N/A")],
+            ["Competência:", registro.get("Competencia", "N/A")],
+            ["Cargo:", registro.get("Cargo", "N/A")],
+            ["Setor:", registro.get("Setor", "N/A")],
+            ["Salário Base:", registro.get("Salario Base", "N/A")],
+            ["Horas Extras:", registro.get("Horas Extras", "N/A")],
+            ["Descontos:", registro.get("Descontos", "N/A")],
+            ["Salário Líquido:", registro.get("Salario Liquido", "N/A")]
+        ]
+
+        col2_width = width - 100 - (2 * margem)
+        table = Table(info_data, colWidths=[150, col2_width])
+        table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6)
+        ]))
+        table_width, table_height = table.wrapOn(c, width - 2 * margem, height)
+        table.drawOn(c, margem, y - table_height)
+        y -= table_height + 10
+
+        c.setFillColor(black)
+        c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+        c.save()
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        print(f"Erro ao gerar PDF do holerite: {e}")
+        return None
 def processar_fotos(fotos_upload, obra_nome, data_relatorio):
     fotos_processadas_paths = []
     temp_dir_path_obj = None
@@ -162,7 +224,6 @@ def processar_fotos(fotos_upload, obra_nome, data_relatorio):
         if temp_dir_path_obj and temp_dir_path_obj.exists():
             shutil.rmtree(temp_dir_path_obj)
         return []
-
 def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=None):
     try:
         yag = yagmail.SMTP(
@@ -180,7 +241,14 @@ def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=N
             with open(temp_pdf_path, "wb") as f:
                 f.write(pdf_buffer.read())
             attachments.append(temp_pdf_path)
-        corpo = f"""<html><body>{corpo_html}<p style='color: #888; font-size: 0.8em;'>Enviado automaticamente - Sistema RDV Engenharia</p></body></html>"""
+        corpo = f"""
+        <html>
+            <body>
+                {corpo_html}
+                <p style='color: #888; font-size: 0.8em;'>Enviado automaticamente - Sistema RDV Engenharia</p>
+            </body>
+        </html>
+        """
         yag.send(to=destinatarios, subject=assunto, contents=[corpo] + attachments)
         return True
     except Exception as e:

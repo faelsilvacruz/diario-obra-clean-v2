@@ -87,6 +87,18 @@ def render_diario_obra_page():
                 })
 
     st.markdown("---")
+    st.subheader("Controle de Documentação de Segurança")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        hora_lt = st.time_input("Hora de Liberação da LT", value=datetime.strptime("07:00", "%H:%M").time())
+    with col2:
+        hora_apr = st.time_input("Hora de Liberação da APR", value=datetime.strptime("07:00", "%H:%M").time())
+
+    data_apr = st.date_input("Data de Emissão da APR", value=datetime.today())
+    numero_apr = st.text_input("Número ou Código da APR")
+
+    st.markdown("---")
     st.subheader("Informações Adicionais")
     ocorrencias = st.text_area("Ocorrências")
     nome_empresa = st.text_input("Responsável pela empresa")
@@ -115,6 +127,10 @@ def render_diario_obra_page():
             "Máquinas": maquinas,
             "Serviços": servicos,
             "Efetivo": json.dumps(efetivo_lista, ensure_ascii=False),
+            "Hora LT": hora_lt.strftime("%H:%M"),
+            "Hora APR": hora_apr.strftime("%H:%M"),
+            "Data APR": data_apr.strftime("%d/%m/%Y"),
+            "Numero APR": numero_apr,
             "Ocorrências": ocorrencias,
             "Responsável Empresa": nome_empresa,
             "Fiscalização": nome_fiscal

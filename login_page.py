@@ -8,13 +8,13 @@ def make_hashes(password):
 def check_hashes(password, hashed_text):
     return make_hashes(password) == hashed_text
 
-def login_user(username):
+def get_user_by_username(username):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     c.execute('SELECT username, password, role, senha_alterada FROM userstable WHERE username = ?', (username,))
-    data = c.fetchone()
+    user_data = c.fetchone()
     conn.close()
-    return data
+    return user_data
 
 def render_login_page():
     st.markdown("""
@@ -44,21 +44,25 @@ def render_login_page():
     password = st.text_input('Senha', type='password')
 
     if st.button('Entrar'):
-        user_data = login_user(username)
-        if user_data and check_hashes(password, user_data[1]):
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.role = user_data[2]
-            st.session_state.senha_alterada = user_data[3]
+        user = get_user_by_username(username)
+        if user:
+            db_username, db_password, db_role, db_senha_alterada = user
+            if check_hashes(password, db_password):
+                st.session_state.logged_in = True
+                st.session_state.username = db_username
+                st.session_state.role = db_role
+                st.session_state.senha_alterada = db_senha_alterada
 
-            if st.session_state.senha_alterada == 0:
-                st.session_state.page = "alterar_senha"
+                if db_senha_alterada == 0:
+                    st.session_state.page = "alterar_senha"
+                else:
+                    st.session_state.page = "documentos"
+
+                st.rerun()
             else:
-                st.session_state.page = "documentos"
-
-            st.rerun()
+                st.error('Senha incorreta.')
         else:
-            st.error('Usuário ou senha inválidos.')
+            st.error('Usuário não encontrado.')
 
 def render_password_change_page():
     st.title("🔑 Alteração Obrigatória de Senha")

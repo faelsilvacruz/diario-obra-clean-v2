@@ -138,6 +138,64 @@ def gerar_pdf(registro, fotos_paths):
         print(f"Erro ao gerar PDF: {e}")
         return None
 
+def gerar_pdf_holerite(registro):
+    buffer = io.BytesIO()
+    try:
+        c = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+        margem = 30
+
+        c.setFillColor(HexColor("#0F2A4D"))
+        c.rect(0, height - 80, width, 80, fill=True, stroke=False)
+        c.setFillColor(white)
+        c.setFont("Helvetica-Bold", 18)
+        c.drawCentredString(width / 2, height - 50, "HOLERITE")
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(width / 2, height - 70, "RDV ENGENHARIA")
+
+        if os.path.exists(LOGO_PDF_PATH):
+            try:
+                logo = ImageReader(LOGO_PDF_PATH)
+                c.drawImage(logo, 30, height - 70, width=100, height=50, preserveAspectRatio=True)
+            except Exception:
+                pass
+
+        y = height - 100
+
+        info_data = [
+            ["Nome:", registro.get("Nome", "N/A")],
+            ["Matrícula:", registro.get("Matricula", "N/A")],
+            ["Competência:", registro.get("Competencia", "N/A")],
+            ["Cargo:", registro.get("Cargo", "N/A")],
+            ["Setor:", registro.get("Setor", "N/A")],
+            ["Salário Base:", registro.get("Salario Base", "N/A")],
+            ["Horas Extras:", registro.get("Horas Extras", "N/A")],
+            ["Descontos:", registro.get("Descontos", "N/A")],
+            ["Salário Líquido:", registro.get("Salario Liquido", "N/A")]
+        ]
+
+        col2_width = width - 100 - (2 * margem)
+        table = Table(info_data, colWidths=[150, col2_width])
+        table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6)
+        ]))
+        table_width, table_height = table.wrapOn(c, width - 2 * margem, height)
+        table.drawOn(c, margem, y - table_height)
+        y -= table_height + 10
+
+        c.setFillColor(black)
+        c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+        c.save()
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        print(f"Erro ao gerar PDF do holerite: {e}")
+        return None
+
 def processar_fotos(fotos_upload, obra_nome, data_relatorio):
     fotos_processadas_paths = []
     temp_dir_path_obj = None

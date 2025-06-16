@@ -8,12 +8,11 @@ def make_hashes(password):
 def check_hashes(password, hashed_text):
     return make_hashes(password) == hashed_text
 
-def login_user(username, password):
+def login_user(username):
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    # Selecionando os campos de forma explícita e ordenada
-    c.execute('SELECT username, password, role, senha_alterada FROM userstable WHERE username =? AND password = ?', (username, password))
-    data = c.fetchall()
+    c.execute('SELECT username, password, role, senha_alterada FROM userstable WHERE username = ?', (username,))
+    data = c.fetchone()
     conn.close()
     return data
 
@@ -45,13 +44,12 @@ def render_login_page():
     password = st.text_input('Senha', type='password')
 
     if st.button('Entrar'):
-        hashed_pswd = make_hashes(password)
-        result = login_user(username, hashed_pswd)
-        if result:
+        user_data = login_user(username)
+        if user_data and check_hashes(password, user_data[1]):
             st.session_state.logged_in = True
             st.session_state.username = username
-            st.session_state.role = result[0][2]
-            st.session_state.senha_alterada = result[0][3]
+            st.session_state.role = user_data[2]
+            st.session_state.senha_alterada = user_data[3]
 
             if st.session_state.senha_alterada == 0:
                 st.session_state.page = "alterar_senha"

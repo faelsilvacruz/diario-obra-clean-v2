@@ -35,46 +35,61 @@ def main():
 
         st.title(f"📋 Aplicativo RDV Engenharia - Usuário: {st.session_state.username}")
 
-        # ===== MENU EM TABS =====
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "📓 Diário de Obra",
-            "📂 Documentos",
-            "👥 Usuários",
-            "💾 Backup",
-            "🔎 Inspecionar Banco",
-            "🚪 Sair"
-        ])
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-        with tab1:
+        st.write("---")
+        pagina = None
+
+        with col1:
+            if st.button("📓 Diário"):
+                pagina = "diario"
+
+        with col2:
+            if st.button("📂 Documentos"):
+                pagina = "documentos"
+
+        with col3:
+            if st.button("👥 Usuários"):
+                pagina = "usuarios"
+
+        with col4:
+            if st.button("💾 Backup"):
+                pagina = "backup"
+
+        with col5:
+            if st.button("🔎 Inspecionar"):
+                pagina = "inspecionar"
+
+        with col6:
+            if st.button("🚪 Sair"):
+                logout()
+
+        if pagina == "diario":
             if st.session_state.role in ["admin", "encarregado"]:
                 render_diario_obra_page()
             else:
                 st.error("Você não tem permissão para acessar o Diário de Obra.")
 
-        with tab2:
+        elif pagina == "documentos":
             render_documentos_colaborador_page()
 
-        with tab3:
+        elif pagina == "usuarios":
             if st.session_state.role == "admin":
                 render_user_management_page()
             else:
                 st.error("Acesso restrito ao administrador.")
 
-        with tab4:
+        elif pagina == "backup":
             if st.session_state.role == "admin":
                 render_backup_page()
             else:
                 st.error("Acesso restrito ao administrador.")
 
-        with tab5:
+        elif pagina == "inspecionar":
             if st.session_state.role == "admin":
                 render_inspecionar_banco_page()
             else:
                 st.error("Acesso restrito ao administrador.")
-
-        with tab6:
-            if st.button("Clique aqui para sair do sistema"):
-                logout()
 
 if __name__ == "__main__":
     main()

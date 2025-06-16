@@ -109,7 +109,6 @@ def gerar_pdf(registro, fotos_paths):
         table.drawOn(c, margem, y - table_height)
         y -= table_height + 10
 
-        # Controle de Documentação de Segurança
         y = draw_text_area(c, f"Controle de Documentação de Segurança:\n"
                               f"Hora de Liberação da LT: {registro.get('Hora LT', '')}\n"
                               f"Hora de Liberação da APR: {registro.get('Hora APR', '')}\n"
@@ -138,3 +137,69 @@ def gerar_pdf(registro, fotos_paths):
     except Exception as e:
         print(f"Erro ao gerar PDF: {e}")
         return None
+
+def processar_fotos(fotos_upload, obra_nome, data_relatorio):
+    fotos_processadas_paths = []
+    temp_dir_path_obj = None
+    try:
+        temp_dir_path_obj = Path(tempfile.mkdtemp(prefix="diario_obra_"))
+        for i, foto_file in enumerate(fotos_upload):
+            if foto_file is None:
+                continue
+            try:
+                nome_foto_base = f"{obra_nome.replace(' ', '_')}_{data_relatorio.strftime('%Y-%m-%d')}_foto{i+1}"
+                nome_foto_final = f"{nome_foto_base}{Path(foto_file.name).suffix}"
+                caminho_foto_temp = temp_dir_path_obj / nome_foto_final
+                with open(caminho_foto_temp, "wb") as f:
+                    f.write(foto_file.getbuffer())
+                if not caminho_foto_temp.exists():
+                    raise FileNotFoundError()
+                img = PILImage.open(caminho_foto_temp)
+                img.thumbnail((1200, 1200), PILImage.Resampling.LANCZOS)
+                img.save(caminho_foto_temp, "JPEG", quality=85)
+                fotos_processadas_paths.append(str(caminho_foto_temp))
+            except Exception:
+                continue
+        return fotos_processadas_paths
+    except Exception:
+        if temp_dir_path_obj and temp_dir_path_obj.exists():
+            shutil.rmtree(temp_dir_path_obj)
+        return []
+
+def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=None):
+    try:
+        yag = yagmail.SMTP(
+            user=st.secrets["email"]["user"],
+            password=st.secrets["email"]["password"],
+            host='smtp.gmail.com',
+            port=587,
+            smtp_starttls=True,
+            smtp_ssl=False,
+            timeout=30
+        )
+
+        attachments = []
+        if pdf_buffer and nome_pdf:
+            temp_pdf_path = f"/tmp/{nome_pdf}"
+            with open(temp_pdf_path, "wb") as f:
+                f.write(pdf_buffer.read())
+            attachments.append(temp_pdf_path)
+
+        corpo = f"""
+        <html>
+            <body>
+                {corpo_html}
+                <p style="color: #888; font-size: 0.8em;">Enviado automaticamente - Sistema RDV Engenharia</p>
+            </body>
+        </html>
+        """
+
+        yag.send(
+            to=destinatarios,
+            subject=assunto,
+            contents=[corpo] + attachments
+        )
+        return True
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+        return False

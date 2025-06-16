@@ -24,7 +24,7 @@ class DiarioObraPDF(FPDF):
         self.set_text_color(130, 130, 130)
         self.cell(0, 6, f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")} - Página {self.page_no()}', 0, 0, 'R')
 
-def gerar_pdf_fpfd(dados_obra, colaboradores, maquinas, servicos, controle_doc, intercorrencias, responsavel, fiscal, clima, fotos_paths=None):
+def gerar_pdf(dados_obra, colaboradores, maquinas, servicos, controle_doc, intercorrencias, responsavel, fiscal, clima, fotos_paths=None):
     pdf = DiarioObraPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=20)

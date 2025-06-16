@@ -75,7 +75,7 @@ def render_user_management_page():
                 add_user(novo_user, nova_senha, novo_role)
                 st.success(f"Usuário '{novo_user}' adicionado com sucesso!")
                 st.session_state.user_aba = "Listar Usuários"
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Por favor, preencha todos os campos.")
 
@@ -90,7 +90,7 @@ def render_user_management_page():
                 update_user(usuario_alvo, nova_senha, novo_role)
                 st.success(f"Usuário '{usuario_alvo}' atualizado com sucesso!")
                 st.session_state.user_aba = "Listar Usuários"
-                st.experimental_rerun()
+                st.rerun()
         else:
             st.warning("Nenhum usuário encontrado.")
 
@@ -103,7 +103,7 @@ def render_user_management_page():
                 delete_user(usuario_delete)
                 st.success(f"Usuário '{usuario_delete}' excluído com sucesso!")
                 st.session_state.user_aba = "Listar Usuários"
-                st.experimental_rerun()
+                st.rerun()
         else:
             st.warning("Nenhum usuário encontrado.")
 

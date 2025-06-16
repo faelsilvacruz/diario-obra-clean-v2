@@ -18,6 +18,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
 import yagmail
+import streamlit as st  # ✅ Importação obrigatória para st.secrets
 
 # ======= CONSTANTES GLOBAIS =======
 DRIVE_FOLDER_ID = "1BUgZRcBrKksC3eUytoJ5mv_nhMRdAv1d"
@@ -89,7 +90,7 @@ def gerar_pdf(registro, fotos_paths):
 
         draw_header(c, width, height, LOGO_PDF_PATH)
         y = height - 100
-        # Aqui você pode incluir as chamadas para outras partes do layout (info, clima, máquinas, etc)
+        # Aqui você pode adicionar os outros blocos de layout do PDF, como clima, máquinas, serviços, etc.
         draw_footer(c, width, margem, y, registro)
 
         c.save()

@@ -138,7 +138,7 @@ def gerar_pdf(registro, fotos_paths):
     except Exception as e:
         print(f"Erro ao gerar PDF: {e}")
         return None
-        def gerar_pdf_holerite(registro):
+    def gerar_pdf_holerite(registro):
     buffer = io.BytesIO()
     try:
         c = canvas.Canvas(buffer, pagesize=A4)

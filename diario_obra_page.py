@@ -4,16 +4,11 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
-from pdf_drive_utils import (
-    gerar_pdf,
-    processar_fotos,
-    upload_para_drive_seguro,
-    enviar_email,
-    creds,
-    temp_icon_path_for_cleanup,
-    LOGO_PDF_PATH,
-    DRIVE_FOLDER_ID
-)
+import shutil
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+
+from app import gerar_pdf, processar_fotos, enviar_email, creds, temp_icon_path_for_cleanup, LOGO_PDF_PATH, DRIVE_FOLDER_ID
 
 def render_diario_obra_page():
     @st.cache_data(ttl=3600)
@@ -29,9 +24,9 @@ def render_diario_obra_page():
 
     obras_df = carregar_arquivo_csv("obras.csv")
     contratos_df = carregar_arquivo_csv("contratos.csv")
+
     colab_df = pd.DataFrame()
     colaboradores_lista = []
-
     try:
         colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
         if not colab_df.empty and {"Nome", "Função"}.issubset(colab_df.columns):
@@ -67,13 +62,7 @@ def render_diario_obra_page():
     st.subheader("Efetivo de Pessoal")
 
     max_colabs = len(colaboradores_lista) if colaboradores_lista else 8
-    qtd_colaboradores = st.number_input(
-        "Quantos colaboradores hoje?",
-        min_value=1,
-        max_value=max_colabs,
-        value=1,
-        step=1
-    )
+    qtd_colaboradores = st.number_input("Quantos colaboradores hoje?", min_value=1, max_value=max_colabs, value=1, step=1)
 
     efetivo_lista = []
     for i in range(int(qtd_colaboradores)):
@@ -86,12 +75,26 @@ def render_diario_obra_page():
                     match = colab_df[colab_df["Nome_Normalizado"] == nome_normalizado]
                     if not match.empty:
                         funcao = match.iloc[0]["Função"].strip()
-                st.markdown(f"**Função:** {funcao if funcao else 'Selecione o colaborador'}")
+
+                st.markdown("Função:")
+                valor_exibir = funcao if funcao else "Selecione o colaborador para exibir a função"
+                cor_valor = "#fff" if funcao else "#888"
+                st.markdown(
+                    f"""
+                    <div style="background:#262730;color:{cor_valor};padding:9px 14px;
+                    border-radius:7px;border:1.5px solid #363636;font-size:16px;
+                    font-family:inherit;margin-bottom:10px;margin-top:2px;height:38px;
+                    display:flex;align-items:center;">{valor_exibir}</div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
                 col1, col2 = st.columns(2)
                 with col1:
                     entrada = st.time_input("Entrada", value=datetime.strptime("08:00", "%H:%M").time(), key=f"entrada_{i}")
                 with col2:
                     saida = st.time_input("Saída", value=datetime.strptime("17:00", "%H:%M").time(), key=f"saida_{i}")
+
                 efetivo_lista.append({
                     "Nome": nome,
                     "Função": funcao,
@@ -110,12 +113,11 @@ def render_diario_obra_page():
     if st.button("Salvar e Gerar Relatório"):
         temp_dir_obj_for_cleanup = None
         fotos_processed_paths = []
-
         try:
-            if not obra or obra == "":
+            if not obra:
                 st.error("Por favor, selecione a 'Obra'.")
                 st.stop()
-            if not contrato or contrato == "":
+            if not contrato:
                 st.error("Por favor, selecione o 'Contrato'.")
                 st.stop()
             if not nome_empresa:
@@ -140,8 +142,6 @@ def render_diario_obra_page():
                 fotos_processed_paths = processar_fotos(fotos, obra, data) if fotos else []
                 if fotos_processed_paths:
                     temp_dir_obj_for_cleanup = Path(fotos_processed_paths[0]).parent
-                elif fotos:
-                    st.warning("Nenhuma foto foi processada corretamente. O PDF pode não conter imagens.")
 
             with st.spinner("Gerando PDF..."):
                 nome_pdf = f"Diario_{obra.replace(' ', '_')}_{data.strftime('%Y-%m-%d')}.pdf"
@@ -154,34 +154,62 @@ def render_diario_obra_page():
                 label="📥 Baixar Relatório PDF",
                 data=pdf_buffer,
                 file_name=nome_pdf,
-                mime="application/pdf"
+                mime="application/pdf",
+                type="primary"
             )
 
+            # ========== ENVIO PARA O GOOGLE DRIVE ==========
             with st.spinner("Enviando para Google Drive..."):
-                drive_id = upload_para_drive_seguro(pdf_buffer, nome_pdf)
-                if drive_id:
-                    st.success(f"PDF salvo no Google Drive! ID: {drive_id}")
-                    st.markdown(f"[Abrir no Drive](https://drive.google.com/file/d/{drive_id}/view)")
+                try:
+                    service = build("drive", "v3", credentials=creds, static_discovery=False)
+                    pdf_buffer.seek(0)
+                    media = MediaIoBaseUpload(pdf_buffer, mimetype='application/pdf', resumable=True)
+                    file_metadata = {
+                        'name': nome_pdf,
+                        'parents': [DRIVE_FOLDER_ID]
+                    }
+                    file = service.files().create(
+                        body=file_metadata,
+                        media_body=media,
+                        fields='id, name, parents, webViewLink',
+                        supportsAllDrives=True
+                    ).execute()
 
-                    with st.spinner("Enviando e-mail..."):
-                        assunto = f"Diário de Obra - {obra} ({data.strftime('%d/%m/%Y')})"
-                        corpo = f"""
-                        <p>Relatório diário gerado:</p>
-                        <ul>
-                            <li>Obra: {obra}</li>
-                            <li>Data: {data.strftime('%d/%m/%Y')}</li>
-                            <li>Responsável: {nome_empresa}</li>
-                        </ul>
-                        """
-                        if enviar_email(
-                            ["administrativo@rdvengenharia.com.br"],
-                            assunto, corpo, drive_id
-                        ):
-                            st.success("E-mail enviado com sucesso!")
+                    # DEBUG: Exibir resposta da API
+                    st.write("Resposta completa da API do Drive:", file)
+
+                    drive_id = file.get("id")
+                    drive_link = file.get("webViewLink")
+
+                    if drive_id:
+                        st.success(f"PDF salvo no Google Drive! ID: {drive_id}")
+                        if drive_link:
+                            st.markdown(f"[📄 Abrir PDF no Drive]({drive_link})")
                         else:
-                            st.warning("PDF salvo no Drive, mas falha no envio do e-mail.")
-                else:
-                    st.error("Upload feito, mas não foi possível recuperar o ID do arquivo no Google Drive.")
+                            st.markdown(f"[📄 Abrir no Drive por ID](https://drive.google.com/file/d/{drive_id}/view)")
+
+                        # Envio de e-mail
+                        with st.spinner("Enviando e-mail..."):
+                            assunto = f"Diário de Obra - {obra} ({data.strftime('%d/%m/%Y')})"
+                            corpo = f"""
+                            <p>Relatório diário gerado:</p>
+                            <ul>
+                                <li>Obra: {obra}</li>
+                                <li>Data: {data.strftime('%d/%m/%Y')}</li>
+                                <li>Responsável: {nome_empresa}</li>
+                            </ul>
+                            <p><a href="https://drive.google.com/file/d/{drive_id}/view">Acessar PDF no Google Drive</a></p>
+                            """
+                            if enviar_email(["administrativo@rdvengenharia.com.br"], assunto, corpo, drive_id):
+                                st.success("E-mail enviado com sucesso!")
+                            else:
+                                st.warning("PDF salvo no Drive, mas falha ao enviar o e-mail.")
+
+                    else:
+                        st.error("Upload feito, mas não foi possível recuperar o ID do arquivo no Google Drive.")
+
+                except Exception as e:
+                    st.error(f"Falha no upload para o Google Drive. Erro: {e}")
 
         finally:
             try:

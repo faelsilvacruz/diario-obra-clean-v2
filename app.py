@@ -11,6 +11,7 @@ def logout():
     st.rerun()
 
 def render_menu_lateral():
+    st.sidebar.write("DEBUG - Role atual:", st.session_state.role)
     st.markdown("""
         <style>
             section[data-testid="stSidebar"] {

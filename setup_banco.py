@@ -1,3 +1,4 @@
+import streamlit as st
 import sqlite3
 import hashlib
 
@@ -18,9 +19,9 @@ def setup_database():
     )
     ''')
 
-    # Criar usuário admin inicial (se não existir)
+    # Criar usuário admin inicial, se ainda não existir
     admin_username = 'admin'
-    admin_password = make_hashes('1234')  # Senha inicial: 1234
+    admin_password = make_hashes('1234')  # Senha inicial padrão
     admin_role = 'admin'
 
     c.execute("SELECT * FROM userstable WHERE username = ?", (admin_username,))
@@ -28,12 +29,16 @@ def setup_database():
         c.execute('INSERT INTO userstable (username, password, role, senha_alterada) VALUES (?,?,?,1)',
                   (admin_username, admin_password, admin_role))
         conn.commit()
-        print("Usuário admin criado com sucesso.")
+        return "Usuário admin criado com sucesso (senha: 1234)."
     else:
-        print("Usuário admin já existe. Nenhuma alteração feita.")
+        return "Usuário admin já existe. Nenhuma alteração feita."
 
-    conn.close()
+def main():
+    st.title("🛠️ Setup do Banco de Dados - users.db")
+
+    if st.button("Executar Setup"):
+        resultado = setup_database()
+        st.success(f"✅ Setup concluído: {resultado}")
 
 if __name__ == "__main__":
-    setup_database()
-    print("Setup finalizado.")
+    main()

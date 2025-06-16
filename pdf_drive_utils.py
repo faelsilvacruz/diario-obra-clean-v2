@@ -1,4 +1,3 @@
-
 import os
 import io
 import json
@@ -14,23 +13,13 @@ from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
 from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
 import yagmail
 import streamlit as st
 
-DRIVE_FOLDER_ID = "1BUgZRcBrKksC3eUytoJ5mv_nhMRdAv1d"
+# ======= CONSTANTES =======
 LOGO_PDF_PATH = "LOGO_RDV_AZUL-sem fundo.png"
 
-try:
-    creds_dict = dict(st.secrets["google_service_account"])
-    creds = service_account.Credentials.from_service_account_info(
-        creds_dict, scopes=["https://www.googleapis.com/auth/drive"]
-    )
-except Exception as e:
-    creds = None
-
+# ======= PDF =======
 def gerar_pdf(registro, fotos_paths):
     buffer = io.BytesIO()
     try:
@@ -40,7 +29,12 @@ def gerar_pdf(registro, fotos_paths):
 
         def draw_text_area(c, text, x, y_start, width_max, font_size=10, line_height=14):
             styles = getSampleStyleSheet()
-            style = ParagraphStyle('Custom', fontName='Helvetica', fontSize=font_size, leading=line_height)
+            style = ParagraphStyle(
+                'Custom',
+                fontName='Helvetica',
+                fontSize=font_size,
+                leading=line_height
+            )
             text = text.replace('\n', '<br/>')
             p = Paragraph(text, style)
             text_width, text_height = p.wrapOn(c, width_max, A4[1])
@@ -65,7 +59,7 @@ def gerar_pdf(registro, fotos_paths):
 
         y = height - 100
 
-        # Informações da Obra
+        # Informações gerais
         info_data = [
             ["OBRA:", registro.get("Obra", "N/A")],
             ["LOCAL:", registro.get("Local", "N/A")],
@@ -85,12 +79,64 @@ def gerar_pdf(registro, fotos_paths):
         table.drawOn(c, margem, y - table_height)
         y -= table_height + 10
 
+        # Máquinas
+        maquinas_txt = registro.get('Máquinas', '').strip() or 'Nenhuma máquina/equipamento informado.'
+        y = draw_text_area(c, f"Máquinas e Equipamentos:\n{maquinas_txt}", margem, y, width - 2*margem)
+
+        # Serviços
+        servicos_txt = registro.get('Serviços', '').strip() or 'Nenhum serviço executado informado.'
+        y = draw_text_area(c, f"Serviços Executados:\n{servicos_txt}", margem, y, width - 2*margem)
+
+        # Efetivo
+        try:
+            efetivo_data = json.loads(registro.get("Efetivo", "[]"))
+        except Exception:
+            efetivo_data = []
+
+        data_efetivo = [["NOME", "FUNÇÃO", "ENTRADA", "SAÍDA"]]
+        for item in efetivo_data:
+            data_efetivo.append([
+                item.get("Nome", ""),
+                item.get("Função", ""),
+                item.get("Entrada", ""),
+                item.get("Saída", "")
+            ])
+        while len(data_efetivo) < 7:
+            data_efetivo.append(["", "", "", ""])
+
+        table = Table(data_efetivo, colWidths=[150, 100, 65, 65])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), HexColor("#0F2A4D")),
+            ('TEXTCOLOR', (0,0), (-1,0), white),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 9),
+            ('FONTSIZE', (0,1), (-1,-1), 8),
+            ('ALIGN', (0,0), (-1,0), 'CENTER'),
+            ('GRID', (0,0), (-1,-1), 0.5, lightgrey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE')
+        ]))
+        table_width, table_height = table.wrapOn(c, width - 2*margem, height)
+        table.drawOn(c, margem, y - table_height)
+        y -= table_height + 10
+
         # Ocorrências
         ocorrencias_txt = registro.get('Ocorrências', '').strip() or 'Nenhuma ocorrência informada.'
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(margem, y - 10, "Ocorrências:")
-        y -= 18
-        y = draw_text_area(c, ocorrencias_txt, margem + 10, y, width - 2*margem - 20)
+        y = draw_text_area(c, f"Ocorrências:\n{ocorrencias_txt}", margem, y, width - 2*margem)
+
+        # Assinaturas
+        footer_h = 80
+        c.setFont("Helvetica", 9)
+        c.setFillColor(darkgrey)
+        c.rect(margem, margem, width - 2*margem, 70)
+        c.line(margem + 50, margem + 45, margem + 200, margem + 45)
+        c.drawCentredString(margem + 125, margem + 30, "Responsável Técnico")
+        c.drawCentredString(margem + 125, margem + 15, f"Nome: {registro.get('Responsável Empresa', '')}")
+        c.line(width - margem - 200, margem + 45, width - margem - 50, margem + 45)
+        c.drawCentredString(width - margem - 125, margem + 30, "Fiscalização")
+        c.drawCentredString(width - margem - 125, margem + 15, f"Nome: {registro.get('Fiscalização', '')}")
+
+        c.setFillColor(black)
+        c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
         c.save()
         buffer.seek(0)
@@ -99,6 +145,7 @@ def gerar_pdf(registro, fotos_paths):
         print(f"Erro ao gerar PDF: {e}")
         return None
 
+# ======= PROCESSAR FOTOS =======
 def processar_fotos(fotos_upload, obra_nome, data_relatorio):
     fotos_processadas_paths = []
     temp_dir_path_obj = None
@@ -107,18 +154,28 @@ def processar_fotos(fotos_upload, obra_nome, data_relatorio):
         for i, foto_file in enumerate(fotos_upload):
             if foto_file is None:
                 continue
-            nome_foto_base = f"{obra_nome.replace(' ', '_')}_{data_relatorio.strftime('%Y-%m-%d')}_foto{i+1}"
-            nome_foto_final = f"{nome_foto_base}{Path(foto_file.name).suffix}"
-            caminho_foto_temp = temp_dir_path_obj / nome_foto_final
-            with open(caminho_foto_temp, "wb") as f:
-                f.write(foto_file.getbuffer())
-            fotos_processadas_paths.append(str(caminho_foto_temp))
+            try:
+                nome_foto_base = f"{obra_nome.replace(' ', '_')}_{data_relatorio.strftime('%Y-%m-%d')}_foto{i+1}"
+                nome_foto_final = f"{nome_foto_base}{Path(foto_file.name).suffix}"
+                caminho_foto_temp = temp_dir_path_obj / nome_foto_final
+                with open(caminho_foto_temp, "wb") as f:
+                    f.write(foto_file.getbuffer())
+                if not caminho_foto_temp.exists():
+                    raise FileNotFoundError()
+                img = PILImage.open(caminho_foto_temp)
+                img.thumbnail((1200, 1200), PILImage.Resampling.LANCZOS)
+                img.save(caminho_foto_temp, "JPEG", quality=85)
+                fotos_processadas_paths.append(str(caminho_foto_temp))
+            except Exception:
+                continue
         return fotos_processadas_paths
-    except Exception as e:
-        print(f"Erro ao processar fotos: {e}")
+    except Exception:
+        if temp_dir_path_obj and temp_dir_path_obj.exists():
+            shutil.rmtree(temp_dir_path_obj)
         return []
 
-def enviar_email(destinatarios, assunto, corpo_html, attachment=None, attachment_name="Relatorio.pdf"):
+# ======= ENVIO DE E-MAIL COM PDF EM ANEXO =======
+def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=None):
     try:
         yag = yagmail.SMTP(
             user=st.secrets["email"]["user"],
@@ -129,16 +186,29 @@ def enviar_email(destinatarios, assunto, corpo_html, attachment=None, attachment
             smtp_ssl=False,
             timeout=30
         )
-        contents = [yagmail.inline(corpo_html)]
-        if attachment is not None:
-            attachment.seek(0)
-            contents.append(attachment.read())
+
+        attachments = []
+        if pdf_buffer and nome_pdf:
+            temp_pdf_path = f"/tmp/{nome_pdf}"
+            with open(temp_pdf_path, "wb") as f:
+                f.write(pdf_buffer.read())
+            attachments.append(temp_pdf_path)
+
+        corpo = f"""
+        <html>
+            <body>
+                {corpo_html}
+                <p style="color: #888; font-size: 0.8em;">Enviado automaticamente - Sistema RDV Engenharia</p>
+            </body>
+        </html>
+        """
+
         yag.send(
             to=destinatarios,
             subject=assunto,
-            contents=contents,
-            attachments={attachment_name: attachment} if attachment else None
+            contents=[corpo] + attachments
         )
+
         return True
     except Exception as e:
         print(f"Erro ao enviar e-mail: {e}")

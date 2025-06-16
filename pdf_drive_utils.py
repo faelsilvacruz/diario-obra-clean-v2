@@ -6,13 +6,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from PIL import Image as PILImage
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
-from reportlab.platypus import Table, TableStyle, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT
+from fpdf import FPDF
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -22,7 +16,7 @@ import streamlit as st
 
 # ======= CONSTANTES =======
 DRIVE_FOLDER_ID = "1BUgZRcBrKksC3eUytoJ5mv_nhMRdAv1d"
-LOGO_PDF_PATH = "LOGO_RDV_AZUL-sem fundo.png"
+LOGO_PDF_PATH = "LOGO_RDV_AZUL.png"
 temp_icon_path_for_cleanup = None
 
 # ======= CREDENCIAIS GOOGLE =======
@@ -34,163 +28,131 @@ try:
 except Exception as e:
     creds = None
 
+# ======= CLASSE PDF FINAL =======
+class DiarioObraPDF(FPDF):
+    def header(self):
+        self.set_fill_color(15, 42, 77)
+        self.rect(0, 0, self.w, 35, 'F')
+        if os.path.exists(LOGO_PDF_PATH):
+            self.image(LOGO_PDF_PATH, 12, 8, 19, 13)
+        self.set_xy(0, 10)
+        self.set_font('Arial', 'B', 17)
+        self.set_text_color(255, 255, 255)
+        self.cell(self.w, 10, 'DIÁRIO DE OBRA', border=0, ln=2, align='C')
+        self.set_font('Arial', 'B', 12)
+        self.cell(self.w, 7, 'RDV ENGENHARIA', border=0, ln=1, align='C')
+        self.ln(7)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(130, 130, 130)
+        self.cell(0, 6, f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")} - Página {self.page_no()}', 0, 0, 'R')
+
 # ======= GERAÇÃO DE PDF =======
 def gerar_pdf(registro, fotos_paths):
-    buffer = io.BytesIO()
+    pdf = DiarioObraPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=20)
+
+    # Dados Gerais da Obra
+    pdf.set_font('Arial', 'B', 11)
+    pdf.set_text_color(0, 0, 0)
+    campos = [
+        ("OBRA:", registro.get("Obra", "")),
+        ("LOCAL:", registro.get("Local", "")),
+        ("DATA:", registro.get("Data", "")),
+        ("CONTRATO:", registro.get("Contrato", "")),
+        ("CLIMA:", registro.get("Clima", ""))
+    ]
+    for rotulo, valor in campos:
+        pdf.cell(25, 8, rotulo, 0, 0)
+        pdf.set_font('Arial', '', 11)
+        pdf.cell(80, 8, valor, 0, 1)
+        pdf.set_font('Arial', 'B', 11)
+
+    # Serviços Executados
+    pdf.ln(3)
+    pdf.set_fill_color(220, 230, 242)
+    pdf.cell(0, 7, 'SERVIÇOS EXECUTADOS:', 0, 1, 'L', True)
+    pdf.set_font('Arial', '', 10)
+    pdf.multi_cell(0, 7, registro.get("Serviços", "Nenhum serviço informado.").strip() or "Nenhum serviço informado.", 0, 1)
+
+    # Máquinas
+    pdf.ln(2)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, 'MÁQUINAS/EQUIPAMENTOS:', 0, 1, 'L', True)
+    pdf.set_font('Arial', '', 10)
+    pdf.multi_cell(0, 7, registro.get("Máquinas", "Nenhuma máquina/equipamento informado.").strip() or "Nenhuma máquina/equipamento informado.", 0, 1)
+
+    # Efetivo de Pessoal
+    pdf.ln(2)
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(0, 7, 'EFETIVO DE PESSOAL', 0, 1, 'L', True)
+    pdf.set_fill_color(15, 42, 77)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font('Arial', 'B', 10)
+    pdf.cell(70, 8, 'NOME', 1, 0, 'C', True)
+    pdf.cell(40, 8, 'FUNÇÃO', 1, 0, 'C', True)
+    pdf.cell(30, 8, 'ENTRADA', 1, 0, 'C', True)
+    pdf.cell(30, 8, 'SAÍDA', 1, 1, 'C', True)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font('Arial', '', 9)
     try:
-        c = canvas.Canvas(buffer, pagesize=A4)
-        width, height = A4
-        margem = 30
+        efetivo_data = json.loads(registro.get("Efetivo", "[]"))
+    except Exception:
+        efetivo_data = []
+    for item in efetivo_data:
+        pdf.cell(70, 8, item.get("Nome", ""), 1)
+        pdf.cell(40, 8, item.get("Função", ""), 1)
+        pdf.cell(30, 8, item.get("Entrada", ""), 1)
+        pdf.cell(30, 8, item.get("Saída", ""), 1)
+        pdf.ln()
+    pdf.ln(2)
 
-        styles = getSampleStyleSheet()
+    # Intercorrências
+    pdf.set_font('Arial', 'B', 11)
+    pdf.set_fill_color(220, 230, 242)
+    pdf.cell(0, 7, 'INTERCORRÊNCIAS:', 0, 1, 'L', True)
+    pdf.set_font('Arial', '', 10)
+    pdf.multi_cell(0, 7, registro.get("Ocorrências", "Sem intercorrências.").strip() or "Sem intercorrências.", 0, 1)
+    pdf.ln(2)
 
-        def draw_text_area(c, text, x, y_start, width_max, font_size=10, line_height=14):
-            style = ParagraphStyle(
-                'Custom',
-                fontName='Helvetica',
-                fontSize=font_size,
-                leading=line_height
-            )
-            text = text.replace('\n', '<br/>')
-            p = Paragraph(text, style)
-            text_width, text_height = p.wrapOn(c, width_max, A4[1])
-            actual_y = y_start - text_height
-            p.drawOn(c, x, actual_y)
-            return actual_y - line_height
+    # Assinaturas
+    pdf.set_font('Arial', 'B', 11)
+    pdf.set_fill_color(220, 230, 242)
+    pdf.cell(0, 7, 'ASSINATURAS:', 0, 1, 'L', True)
+    pdf.ln(10)
 
-        # Cabeçalho
-        c.setFillColor(HexColor("#0F2A4D"))
-        c.rect(0, height-80, width, 80, fill=True, stroke=False)
-        c.setFillColor(white)
-        c.setFont("Helvetica-Bold", 18)
-        c.drawCentredString(width/2, height-50, "DIÁRIO DE OBRA")
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(width/2, height-70, "RDV ENGENHARIA")
-        if os.path.exists(LOGO_PDF_PATH):
-            try:
-                logo = ImageReader(LOGO_PDF_PATH)
-                c.drawImage(logo, 30, height-70, width=100, height=50, preserveAspectRatio=True)
-            except Exception:
-                pass
+    largura_linha = 60
+    distancia_entre = 45
+    largura_total = (2 * largura_linha) + distancia_entre
+    x_inicio = (pdf.w - largura_total) / 2
+    y_assin = pdf.get_y()
+    pdf.set_draw_color(70, 70, 70)
+    pdf.line(x_inicio, y_assin, x_inicio + largura_linha, y_assin)
+    pdf.line(x_inicio + largura_linha + distancia_entre, y_assin,
+             x_inicio + 2 * largura_linha + distancia_entre, y_assin)
+    espaco_vertical = 3
+    pdf.set_font('Arial', '', 11)
+    pdf.set_xy(x_inicio, y_assin + espaco_vertical)
+    pdf.cell(largura_linha, 7, "Responsável Técnico:", 0, 2, 'C')
+    pdf.cell(largura_linha, 7, f"Nome: {registro.get('Responsável Empresa', '')}", 0, 0, 'C')
+    pdf.set_xy(x_inicio + largura_linha + distancia_entre, y_assin + espaco_vertical)
+    pdf.cell(largura_linha, 7, "Fiscalização:", 0, 2, 'C')
+    pdf.cell(largura_linha, 7, f"Nome: {registro.get('Fiscalização', '')}", 0, 0, 'C')
+    pdf.ln(20)
 
-        y = height - 100
+    # Fotos
+    for path in fotos_paths:
+        if os.path.exists(path):
+            pdf.add_page()
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 10, f'Foto: {os.path.basename(path)}', 0, 1)
+            pdf.image(path, x=30, w=150)
 
-        # Dados Gerais
-        info_data = [
-            ["OBRA:", registro.get("Obra", "N/A")],
-            ["LOCAL:", registro.get("Local", "N/A")],
-            ["DATA:", registro.get("Data", "N/A")],
-            ["CONTRATO:", registro.get("Contrato", "N/A")]
-        ]
-        table = Table(info_data, colWidths=[100, width - 100 - 2*margem])
-        table.setStyle(TableStyle([
-            ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,-1), 10),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6)
-        ]))
-        table.wrapOn(c, width - 2*margem, height)
-        table.drawOn(c, margem, y - table._height)
-        y -= table._height + 10
-
-        # Clima
-        box_clima_h = 25
-        c.rect(margem, y - box_clima_h, width - 2*margem, box_clima_h)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(margem + 5, y - 15, "Condições do dia:")
-        c.setFont("Helvetica", 11)
-        c.drawString(margem + 120, y - 15, registro.get('Clima', 'N/A'))
-        y -= (box_clima_h + 8)
-
-        # Máquinas
-        maquinas_txt = registro.get('Máquinas', '').strip() or 'Nenhuma máquina/equipamento informado.'
-        y = draw_text_area(c, f"Máquinas e Equipamentos:\n{maquinas_txt}", margem, y, width - 2*margem)
-
-        # Serviços
-        servicos_txt = registro.get('Serviços', '').strip() or 'Nenhum serviço executado informado.'
-        y = draw_text_area(c, f"Serviços Executados:\n{servicos_txt}", margem, y, width - 2*margem)
-
-        # Efetivo
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(margem, y - 10, "Efetivo de Pessoal:")
-        y -= 18
-        try:
-            efetivo_data = json.loads(registro.get("Efetivo", "[]"))
-        except Exception:
-            efetivo_data = []
-        data_efetivo = [["NOME", "FUNÇÃO", "ENTRADA", "SAÍDA"]]
-        for item in efetivo_data:
-            data_efetivo.append([
-                item.get("Nome", ""),
-                item.get("Função", ""),
-                item.get("Entrada", ""),
-                item.get("Saída", "")
-            ])
-        while len(data_efetivo) < 7:
-            data_efetivo.append(["", "", "", ""])
-        table = Table(data_efetivo, colWidths=[150, 100, 65, 65])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), HexColor("#0F2A4D")),
-            ('TEXTCOLOR', (0,0), (-1,0), white),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,0), 9),
-            ('FONTSIZE', (0,1), (-1,-1), 8),
-            ('GRID', (0,0), (-1,-1), 0.5, lightgrey),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE')
-        ]))
-        table.wrapOn(c, width - 2*margem, height)
-        table.drawOn(c, margem, y - table._height)
-        y -= table._height + 10
-
-        # Ocorrências
-        ocorrencias_txt = registro.get('Ocorrências', '').strip() or 'Nenhuma ocorrência informada.'
-        y = draw_text_area(c, f"Ocorrências:\n{ocorrencias_txt}", margem, y, width - 2*margem)
-
-        # Fiscalização
-        fiscal_txt = registro.get('Fiscalização', '').strip() or 'N/A'
-        y = draw_text_area(c, f"Fiscalização:\n{fiscal_txt}", margem, y, width - 2*margem)
-
-        # Rodapé
-        c.setFont("Helvetica", 9)
-        c.setFillColor(darkgrey)
-        c.rect(margem, margem, width - 2*margem, 70)
-        c.setFillColor(black)
-        c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-
-        # Fotos
-        for i, foto_path in enumerate(fotos_paths):
-            try:
-                if not Path(foto_path).exists():
-                    continue
-                c.showPage()
-                y_foto = height - margem
-                c.setFont("Helvetica-Bold", 12)
-                c.drawString(margem, y_foto, f"📷 Foto {i+1}: {Path(foto_path).name}")
-                img = PILImage.open(foto_path)
-                img_width, img_height = img.size
-                max_img_width = width - 2*margem
-                max_img_height = height - 2*margem
-                aspect_ratio = img_width / img_height
-                if img_width > max_img_width or img_height > max_img_height:
-                    if (max_img_width / aspect_ratio) <= max_img_height:
-                        new_width = max_img_width
-                        new_height = max_img_width / aspect_ratio
-                    else:
-                        new_height = max_img_height
-                        new_width = max_img_height * aspect_ratio
-                    img = img.resize((int(new_width), int(new_height)), PILImage.Resampling.LANCZOS)
-                x_pos = margem + (max_img_width - new_width) / 2
-                y_pos = y_foto - new_height - 10
-                c.drawImage(ImageReader(img), x_pos, y_pos, width=new_width, height=new_height)
-            except Exception:
-                continue
-
-        c.save()
-        buffer.seek(0)
-        return buffer
-    except Exception as e:
-        print(f"Erro ao gerar PDF: {e}")
-        return None
+    pdf_buffer = io.BytesIO(pdf.output(dest='S').encode('latin1'))
+    return pdf_buffer
 
 # ======= PROCESSAR FOTOS =======
 def processar_fotos(fotos_upload, obra_nome, data_relatorio):

@@ -76,7 +76,7 @@ def render_password_change_page():
             conn.commit()
             conn.close()
             st.success("Senha alterada com sucesso! Redirecionando...")
-            st.session_state.page = "home"
+            st.session_state.page = "documentos"
             st.rerun()
         else:
             st.error("As senhas não conferem ou estão em branco.")

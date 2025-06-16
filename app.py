@@ -40,7 +40,7 @@ def render_menu_lateral():
         </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.image("LOGO_RDV_AZUL.png", width=200)
+    st.sidebar.image("logo_rdv.png", width=200)
     st.sidebar.markdown(f'<div class="sidebar-title">Menu Principal</div>', unsafe_allow_html=True)
     st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.username}</b></div>', unsafe_allow_html=True)
 
@@ -61,6 +61,18 @@ def render_menu_lateral():
         logout()
 
 def main():
+    # ======= CSS Global para Fundo Azul Escuro na Área Principal =======
+    st.markdown("""
+        <style>
+        .main {
+            background-color: #0E1A2B;
+        }
+        .block-container {
+            color: white;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
     else:

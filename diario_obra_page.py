@@ -1,184 +1,208 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-import json
-from pathlib import Path
-from PIL import Image as PILImage
-from fpdf import FPDF
-import io
 import os
+import json
+from datetime import datetime
+from pathlib import Path
+import shutil
+from PIL import Image as PILImage
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
+from reportlab.lib.utils import ImageReader
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
 
-# ================= GERADOR DE PDF ====================
-
-class DiarioObraPDF(FPDF):
-    def header(self):
-        self.set_fill_color(15, 42, 77)
-        self.rect(0, 0, self.w, 35, 'F')
-        logo_path = "LOGO_RDV_AZUL.png"
-        if os.path.exists(logo_path):
-            self.image(logo_path, 12, 8, 19, 13)
-        self.set_xy(0, 10)
-        self.set_font('Arial', 'B', 17)
-        self.set_text_color(255, 255, 255)
-        self.cell(self.w, 10, 'DIÁRIO DE OBRA', border=0, ln=2, align='C')
-        self.set_font('Arial', 'B', 12)
-        self.cell(self.w, 7, 'RDV ENGENHARIA', border=0, ln=1, align='C')
-        self.ln(7)
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.set_text_color(130, 130, 130)
-        self.cell(0, 6, f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")} - Página {self.page_no()}', 0, 0, 'R')
-
-def gerar_pdf_fpfd(dados_obra, colaboradores, maquinas, servicos, intercorrencias, responsavel, fiscal, clima, fotos_paths=None):
-    pdf = DiarioObraPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=20)
-
-    # Dados da Obra
-    pdf.set_font('Arial', 'B', 11)
-    pdf.set_text_color(0, 0, 0)
-    campos = [
-        ("OBRA:", dados_obra.get("obra", "")),
-        ("LOCAL:", dados_obra.get("local", "")),
-        ("DATA:", dados_obra.get("data", "")),
-        ("CONTRATO:", dados_obra.get("contrato", "")),
-        ("CLIMA:", clima)
-    ]
-    for rotulo, valor in campos:
-        pdf.cell(25, 8, rotulo, 0, 0)
-        pdf.set_font('Arial', '', 11)
-        pdf.cell(80, 8, valor, 0, 1)
-        pdf.set_font('Arial', 'B', 11)
-
-    # Serviços Executados
-    pdf.ln(3)
-    pdf.set_fill_color(220, 230, 242)
-    pdf.cell(0, 7, 'SERVIÇOS EXECUTADOS:', 0, 1, 'L', True)
-    pdf.set_font('Arial', '', 10)
-    pdf.multi_cell(0, 7, servicos.strip() if servicos.strip() else "Nenhum serviço informado.", 0, 1)
-
-    # Máquinas e Equipamentos
-    pdf.ln(2)
-    pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'MÁQUINAS/EQUIPAMENTOS:', 0, 1, 'L', True)
-    pdf.set_font('Arial', '', 10)
-    pdf.multi_cell(0, 7, maquinas.strip() if maquinas.strip() else "Nenhuma máquina/equipamento informado.", 0, 1)
-
-    # Efetivo de Pessoal
-    pdf.ln(2)
-    pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'EFETIVO DE PESSOAL', 0, 1, 'L', True)
-    pdf.set_fill_color(15, 42, 77)
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font('Arial', 'B', 10)
-    pdf.cell(70, 8, 'NOME', 1, 0, 'C', True)
-    pdf.cell(40, 8, 'FUNÇÃO', 1, 0, 'C', True)
-    pdf.cell(30, 8, 'ENTRADA', 1, 0, 'C', True)
-    pdf.cell(30, 8, 'SAÍDA', 1, 1, 'C', True)
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font('Arial', '', 9)
-    for row in colaboradores:
-        pdf.cell(70, 8, row[0], 1)
-        pdf.cell(40, 8, row[1], 1)
-        pdf.cell(30, 8, row[2], 1)
-        pdf.cell(30, 8, row[3], 1)
-        pdf.ln()
-    pdf.ln(2)
-
-    # Intercorrências
-    pdf.set_font('Arial', 'B', 11)
-    pdf.set_fill_color(220, 230, 242)
-    pdf.cell(0, 7, 'INTERCORRÊNCIAS:', 0, 1, 'L', True)
-    pdf.set_font('Arial', '', 10)
-    pdf.multi_cell(0, 7, intercorrencias.strip() if intercorrencias.strip() else "Sem intercorrências.", 0, 1)
-    pdf.ln(2)
-
-    # Assinaturas
-    pdf.set_font('Arial', 'B', 11)
-    pdf.set_fill_color(220, 230, 242)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 7, 'ASSINATURAS:', 0, 1, 'L', True)
-    pdf.ln(10)
-    largura_linha = 60
-    distancia_entre = 45
-    largura_total = (2 * largura_linha) + distancia_entre
-    x_inicio = (pdf.w - largura_total) / 2
-    y_assin = pdf.get_y()
-    pdf.set_draw_color(70, 70, 70)
-    pdf.line(x_inicio, y_assin, x_inicio + largura_linha, y_assin)
-    pdf.line(x_inicio + largura_linha + distancia_entre, y_assin, x_inicio + 2 * largura_linha + distancia_entre, y_assin)
-    espaco_vertical = 3
-    pdf.set_font('Arial', '', 11)
-    pdf.set_xy(x_inicio, y_assin + espaco_vertical)
-    pdf.cell(largura_linha, 7, "Responsável Técnico:", 0, 2, 'C')
-    pdf.cell(largura_linha, 7, f"Nome: {responsavel}", 0, 0, 'C')
-    pdf.set_xy(x_inicio + largura_linha + distancia_entre, y_assin + espaco_vertical)
-    pdf.cell(largura_linha, 7, "Fiscalização:", 0, 2, 'C')
-    pdf.cell(largura_linha, 7, f"Nome: {fiscal}", 0, 0, 'C')
-    pdf.ln(20)
-
-    # Fotos (em novas páginas)
-    if fotos_paths:
-        for path in fotos_paths:
-            if os.path.exists(path):
-                pdf.add_page()
-                pdf.set_font('Arial', 'B', 12)
-                pdf.cell(0, 10, f'Foto: {os.path.basename(path)}', 0, 1)
-                pdf.image(path, x=30, w=150)
-
-    pdf_buffer = io.BytesIO(pdf.output(dest='S').encode('latin1'))
-    return pdf_buffer
-
-# ================= TELA STREAMLIT ====================
-
+from app import gerar_pdf, processar_fotos, upload_para_drive_seguro, enviar_email, creds, temp_icon_path_for_cleanup, LOGO_PDF_PATH, DRIVE_FOLDER_ID
 def render_diario_obra_page():
-    st.title("Relatório Diário de Obra - RDV Engenharia")
-
-    dados_obra = {
-        "obra": st.text_input("Obra"),
-        "local": st.text_input("Local"),
-        "data": st.text_input("Data", datetime.now().strftime("%d/%m/%Y")),
-        "contrato": st.text_input("Contrato")
-    }
-    clima = st.selectbox("Condições do dia", ["Bom", "Chuva", "Garoa", "Impraticável", "Feriado", "Guarda"])
-    servicos = st.text_area("Serviços executados")
-    maquinas = st.text_area("Máquinas/Equipamentos")
-    intercorrencias = st.text_area("Intercorrências")
-    responsavel = st.text_input("Responsável Técnico")
-    fiscal = st.text_input("Fiscalização")
-
-    st.subheader("Colaboradores")
-    collabs = []
-    num_colabs = st.number_input("Quantos colaboradores?", min_value=1, max_value=15, value=3)
-    for i in range(int(num_colabs)):
-        cols = st.columns(4)
-        nome = cols[0].text_input(f"Nome {i+1}", key=f"nome_{i}")
-        funcao = cols[1].text_input(f"Função {i+1}", key=f"func_{i}")
-        entrada = cols[2].text_input(f"Entrada {i+1}", value="08:00", key=f"ent_{i}")
-        saida = cols[3].text_input(f"Saída {i+1}", value="17:00", key=f"sai_{i}")
-        collabs.append([nome, funcao, entrada, saida])
-
-    st.subheader("Fotos do serviço (opcional)")
-    fotos_upload = st.file_uploader("Selecione fotos", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
-    fotos_paths = []
-    if fotos_upload:
-        for up in fotos_upload:
-            temp_path = f"/tmp/{up.name}"
-            with open(temp_path, "wb") as f:
-                f.write(up.getbuffer())
-            fotos_paths.append(temp_path)
-
-    if st.button("Gerar e Baixar PDF"):
-        pdf_buffer = gerar_pdf_fpfd(
-            dados_obra, collabs, maquinas, servicos,
-            intercorrencias, responsavel, fiscal, clima, fotos_paths
+        @st.cache_data(ttl=3600)
+        def carregar_arquivo_csv(nome_arquivo):
+            if not os.path.exists(nome_arquivo):
+                st.error(f"Erro: Arquivo de dados '{nome_arquivo}' não encontrado.")
+                return pd.DataFrame()
+            try:
+                return pd.read_csv(nome_arquivo)
+            except Exception as e:
+                st.error(f"Erro ao ler o arquivo '{nome_arquivo}': {e}")
+                return pd.DataFrame()
+        obras_df = carregar_arquivo_csv("obras.csv")
+        contratos_df = carregar_arquivo_csv("contratos.csv")
+        colab_df = pd.DataFrame()
+        colaboradores_lista = []
+        try:
+            colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
+            if not colab_df.empty and {"Nome", "Função"}.issubset(colab_df.columns):
+                colab_df = colab_df.dropna()
+                colab_df["Nome"] = colab_df["Nome"].astype(str).str.strip()
+                colab_df["Função"] = colab_df["Função"].astype(str).str.strip()
+                colab_df["Nome_Normalizado"] = colab_df["Nome"].str.lower().str.strip()
+                colaboradores_lista = colab_df["Nome"].tolist()
+            else:
+                st.error("'colaboradores.csv' deve ter colunas 'Nome' e 'Função'.")
+        except Exception as e:
+            st.error(f"Erro ao carregar 'colaboradores.csv': {e}")
+            colab_df = pd.DataFrame()
+        if obras_df.empty or contratos_df.empty:
+            st.stop()
+        obras_lista = [""] + obras_df["Nome"].tolist()
+        contratos_lista = [""] + contratos_df["Nome"].tolist()
+        st.title("Relatório Diário de Obra - RDV Engenharia")
+        st.subheader("Dados Gerais da Obra")
+        obra = st.selectbox("Obra", obras_lista)
+        local = st.text_input("Local")
+        data = st.date_input("Data", datetime.today())
+        contrato = st.selectbox("Contrato", contratos_lista)
+        clima = st.selectbox("Condições do dia",
+                             ["Bom", "Chuva", "Garoa", "Impraticável", "Feriado", "Guarda"])
+        maquinas = st.text_area("Máquinas e equipamentos utilizados")
+        servicos = st.text_area("Serviços executados no dia")
+        st.markdown("---")
+        st.subheader("Efetivo de Pessoal")
+        max_colabs = len(colaboradores_lista) if colaboradores_lista else 8
+        qtd_colaboradores = st.number_input(
+            "Quantos colaboradores hoje?",
+            min_value=1,
+            max_value=max_colabs,
+            value=1,
+            step=1
         )
-        st.success("PDF gerado com sucesso!")
-        st.download_button(
-            label="📥 Baixar Relatório PDF",
-            data=pdf_buffer,
-            file_name="Diario_Obra_RDV.pdf",
-            mime="application/pdf"
-        )
+        efetivo_lista = []
+        for i in range(int(qtd_colaboradores)):
+            with st.container():
+                with st.expander(f"Colaborador {i+1}", expanded=True):
+                    nome = st.selectbox("Nome", [""] + colaboradores_lista, key=f"colab_nome_reativo_{i}")
+                    funcao = ""
+                    if nome and not colab_df.empty:
+                        nome_normalizado = nome.strip().lower()
+                        match = colab_df[colab_df["Nome_Normalizado"] == nome_normalizado]
+                        if not match.empty:
+                            funcao = match.iloc[0]["Função"].strip()
+                    st.markdown("Função:")
+                    valor_exibir = funcao if funcao else "Selecione o colaborador para exibir a função"
+                    cor_valor = "#fff" if funcao else "#888"
+                    st.markdown(
+                        f"""
+                        <div style="background:#262730;color:{cor_valor};padding:9px 14px;
+                        border-radius:7px;border:1.5px solid #363636;font-size:16px;
+                        font-family:inherit;margin-bottom:10px;margin-top:2px;height:38px;
+                        display:flex;align-items:center;">{valor_exibir}</div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        entrada = st.time_input("Entrada", value=datetime.strptime("08:00", "%H:%M").time(), key=f"colab_entrada_reativo_{i}")
+                    with col2:
+                        saida = st.time_input("Saída", value=datetime.strptime("17:00", "%H:%M").time(), key=f"colab_saida_reativo_{i}")
+                    efetivo_lista.append({
+                        "Nome": nome,
+                        "Função": funcao,
+                        "Entrada": entrada.strftime("%H:%M"),
+                        "Saída": saida.strftime("%H:%M")
+                    })
+        st.markdown("---")
+        st.subheader("Informações Adicionais")
+        ocorrencias = st.text_area("Ocorrências")
+        nome_empresa = st.text_input("Responsável pela empresa")
+        nome_fiscal = st.text_input("Nome da fiscalização")
+        fotos = st.file_uploader("Fotos do serviço", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
+        if st.button("Salvar e Gerar Relatório"):
+            temp_dir_obj_for_cleanup = None
+            fotos_processed_paths = []
+            try:
+                if not obra or obra == "":
+                    st.error("Por favor, selecione a 'Obra'.")
+                    st.stop()
+                if not contrato or contrato == "":
+                    st.error("Por favor, selecione o 'Contrato'.")
+                    st.stop()
+                if not nome_empresa:
+                    st.error("Por favor, preencha o campo 'Responsável pela empresa'.")
+                    st.stop()
+                registro = {
+                    "Obra": obra,
+                    "Local": local,
+                    "Data": data.strftime("%d/%m/%Y"),
+                    "Contrato": contrato,
+                    "Clima": clima,
+                    "Máquinas": maquinas,
+                    "Serviços": servicos,
+                    "Efetivo": json.dumps(efetivo_lista, ensure_ascii=False),
+                    "Ocorrências": ocorrencias,
+                    "Responsável Empresa": nome_empresa,
+                    "Fiscalização": nome_fiscal
+                }
+                with st.spinner("Processando fotos..."):
+                    fotos_processed_paths = processar_fotos(fotos, obra, data) if fotos else []
+                    if fotos_processed_paths:
+                        temp_dir_obj_for_cleanup = Path(fotos_processed_paths[0]).parent
+                    elif fotos:
+                        st.warning("Nenhuma foto foi processada corretamente. O PDF pode não conter imagens.")
+                with st.spinner("Gerando PDF..."):
+                    nome_pdf = f"Diario_{obra.replace(' ', '_')}_{data.strftime('%Y-%m-%d')}.pdf"
+                    pdf_buffer = gerar_pdf(registro, fotos_processed_paths)
+                    if pdf_buffer is None:
+                        st.error("Falha ao gerar o PDF. Verifique os logs.")
+                        st.stop()
+                st.download_button(
+                    label="📥 Baixar Relatório PDF",
+                    data=pdf_buffer,
+                    file_name=nome_pdf,
+                    mime="application/pdf",
+                    type="primary"
+                )
+# ... (depois de gerar o PDF e antes do envio de e-mail) ...
+                with st.spinner("Enviando para Google Drive..."):
+                    try:
+                        # Recria o serviço sempre que for usar (seguro para múltiplos uploads)
+                        service = build("drive", "v3", credentials=creds, static_discovery=False)
+                        pdf_buffer.seek(0)
+                        media = MediaIoBaseUpload(pdf_buffer, mimetype='application/pdf', resumable=True)
+                        file_metadata = {'name': nome_pdf, 'parents': [DRIVE_FOLDER_ID]}
+                        file = service.files().create(
+                            body=file_metadata,
+                            media_body=media,
+                            fields='id',
+                            supportsAllDrives=True
+                        ).execute()
+                        drive_id = file.get("id")
+                        if drive_id:
+                            st.success(f"PDF salvo no Google Drive! ID: {drive_id}")
+                            st.markdown(f"[Abrir no Drive](https://drive.google.com/file/d/{drive_id}/view)")
+                            # --- Envio de e-mail, se desejar ---
+                            with st.spinner("Enviando e-mail..."):
+                                assunto = f"Diário de Obra - {obra} ({data.strftime('%d/%m/%Y')})"
+                                corpo = f"""
+                                <p>Relatório diário gerado:</p>
+                                <ul>
+                                    <li>Obra: {obra}</li>
+                                    <li>Data: {data.strftime('%d/%m/%Y')}</li>
+                                    <li>Responsável: {nome_empresa}</li>
+                                </ul>
+                                """
+                                if enviar_email(
+                                    ["administrativo@rdvengenharia.com.br"],
+                                    assunto, corpo, drive_id
+                                ):
+                                    st.success("E-mail enviado com sucesso!")
+                                else:
+                                    st.warning("PDF salvo no Drive, mas falha no envio do e-mail.")
+                        else:
+                            st.error("Upload feito, mas não foi possível recuperar o ID do arquivo no Google Drive.")
+                    except Exception as e:
+                        st.error(f"Falha no upload para o Google Drive. Erro: {e}")
+
+            finally:
+                try:
+                    if temp_dir_obj_for_cleanup and temp_dir_obj_for_cleanup.exists():
+                        shutil.rmtree(temp_dir_obj_for_cleanup)
+                except Exception:
+                    pass
+                try:
+                    if temp_icon_path_for_cleanup and os.path.exists(temp_icon_path_for_cleanup):
+                        os.remove(temp_icon_path_for_cleanup)
+                except Exception:
+                    pass

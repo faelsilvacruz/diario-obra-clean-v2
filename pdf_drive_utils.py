@@ -10,20 +10,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import HexColor, black, lightgrey, white, darkgrey
-from reportlab.platypus import Table, TableStyle, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT
+from reportlab.platypus import Table, TableStyle
 import yagmail
 import streamlit as st
-
-import os
-import io
-from datetime import datetime
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-from reportlab.lib.colors import black, lightgrey
-from PIL import Image as PILImage
 
 LOGO_PDF_PATH = "LOGO_RDV_AZUL-sem fundo.png"
 
@@ -34,20 +23,15 @@ def gerar_pdf(registro, fotos_paths):
     margem = 30
     y = height - margem
 
-    # Função para adicionar uma linha de texto
     def linha(texto, tamanho=10, negrito=False, espaco=15):
         nonlocal y
         if y < 50:
             c.showPage()
             y = height - margem
-        if negrito:
-            c.setFont("Helvetica-Bold", tamanho)
-        else:
-            c.setFont("Helvetica", tamanho)
+        c.setFont("Helvetica-Bold" if negrito else "Helvetica", tamanho)
         c.drawString(margem, y, texto)
         y -= espaco
 
-    # LOGO
     try:
         if os.path.exists(LOGO_PDF_PATH):
             logo = ImageReader(LOGO_PDF_PATH)
@@ -58,23 +42,19 @@ def gerar_pdf(registro, fotos_paths):
     y -= 60
     linha("DIÁRIO DE OBRA", tamanho=14, negrito=True, espaco=20)
 
-    # Cabeçalho geral
     for campo in ["Obra", "Local", "Data", "Contrato", "Clima"]:
         valor = registro.get(campo, "")
         if valor:
             linha(f"{campo.upper()}: {valor}", tamanho=10, negrito=True)
 
-    # Máquinas
     linha("")
     linha("Máquinas e Equipamentos:", negrito=True)
     linha(registro.get("Máquinas", " - "))
 
-    # Serviços Executados
     linha("")
     linha("Serviços Executados:", negrito=True)
     linha(registro.get("Serviços", " - "), tamanho=10, espaco=15)
 
-    # Lista de Colaboradores
     colaboradores = registro.get("Colaboradores", [])
     if colaboradores:
         linha("")
@@ -86,7 +66,6 @@ def gerar_pdf(registro, fotos_paths):
             saida = colab.get("Saída", "")
             linha(f"{nome:<20} {funcao:<20} {entrada:<8} {saida:<8}", tamanho=9, espaco=12)
 
-    # Controle de Documentação
     linha("")
     linha("Controle de Documentação de Segurança:", negrito=True)
     linha(f"Hora de Liberação da LT: {registro.get('Hora_LT', '')}")
@@ -94,63 +73,49 @@ def gerar_pdf(registro, fotos_paths):
     linha(f"Data da APR vigente: {registro.get('Data_APR', '')}")
     linha(f"Número/Código da APR: {registro.get('Codigo_APR', '')}")
 
-    # Ocorrências
     linha("")
     linha("Ocorrências:", negrito=True)
     linha(registro.get("Ocorrencias", " - "), tamanho=10, espaco=15)
 
-    # Responsável Técnico
     linha("")
     linha("Responsável Técnico", negrito=True)
     linha(f"Nome: {registro.get('Responsavel', '')}")
 
-    # Fiscalização
     linha("")
     linha("Fiscalização", negrito=True)
     linha(f"Nome: {registro.get('Fiscalizacao', '')}")
 
-    # Rodapé - Data de Geração
     c.setFont("Helvetica-Oblique", 7)
     c.setFillColor(lightgrey)
     c.drawRightString(width - margem, margem, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
-    # Inserção das Fotos
     if fotos_paths:
         c.showPage()
         y = height - margem
         linha("REGISTRO FOTOGRÁFICO", tamanho=12, negrito=True, espaco=20)
-
         for foto_path in fotos_paths:
             try:
                 img = PILImage.open(foto_path)
                 img_width, img_height = img.size
                 aspect = img_height / img_width
-
                 max_width = width - 2 * margem
                 max_height = 400
-
                 final_width = max_width
                 final_height = final_width * aspect
-
                 if final_height > max_height:
                     final_height = max_height
                     final_width = final_height / aspect
-
                 if y - final_height < margem:
                     c.showPage()
                     y = height - margem
-
                 c.drawImage(foto_path, margem, y - final_height, width=final_width, height=final_height)
                 y -= final_height + 20
             except Exception as e:
                 print(f"Erro ao adicionar foto: {e}")
 
-        c.save()
-        buffer.seek(0)
-        return buffer
-    except Exception as e:
-        print(f"Erro ao gerar PDF: {e}")
-        return None
+    c.save()
+    buffer.seek(0)
+    return buffer
 
 def gerar_pdf_holerite(registro):
     buffer = io.BytesIO()
@@ -158,7 +123,6 @@ def gerar_pdf_holerite(registro):
         c = canvas.Canvas(buffer, pagesize=A4)
         width, height = A4
         margem = 30
-
         c.setFillColor(HexColor("#0F2A4D"))
         c.rect(0, height - 80, width, 80, fill=True, stroke=False)
         c.setFillColor(white)
@@ -166,16 +130,13 @@ def gerar_pdf_holerite(registro):
         c.drawCentredString(width / 2, height - 50, "HOLERITE")
         c.setFont("Helvetica", 12)
         c.drawCentredString(width / 2, height - 70, "RDV ENGENHARIA")
-
         if os.path.exists(LOGO_PDF_PATH):
             try:
                 logo = ImageReader(LOGO_PDF_PATH)
                 c.drawImage(logo, 30, height - 70, width=100, height=50, preserveAspectRatio=True)
             except Exception:
                 pass
-
         y = height - 100
-
         info_data = [
             ["Nome:", registro.get("Nome", "N/A")],
             ["Matrícula:", registro.get("Matricula", "N/A")],
@@ -187,7 +148,6 @@ def gerar_pdf_holerite(registro):
             ["Descontos:", registro.get("Descontos", "N/A")],
             ["Salário Líquido:", registro.get("Salario Liquido", "N/A")]
         ]
-
         col2_width = width - 100 - (2 * margem)
         table = Table(info_data, colWidths=[150, col2_width])
         table.setStyle(TableStyle([
@@ -199,10 +159,8 @@ def gerar_pdf_holerite(registro):
         table_width, table_height = table.wrapOn(c, width - 2 * margem, height)
         table.drawOn(c, margem, y - table_height)
         y -= table_height + 10
-
         c.setFillColor(black)
         c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-
         c.save()
         buffer.seek(0)
         return buffer
@@ -249,14 +207,12 @@ def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=N
             smtp_ssl=False,
             timeout=30
         )
-
         attachments = []
         if pdf_buffer and nome_pdf:
             temp_pdf_path = f"/tmp/{nome_pdf}"
             with open(temp_pdf_path, "wb") as f:
                 f.write(pdf_buffer.read())
             attachments.append(temp_pdf_path)
-
         corpo = f"""
         <html>
             <body>
@@ -265,7 +221,6 @@ def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=N
             </body>
         </html>
         """
-
         yag.send(
             to=destinatarios,
             subject=assunto,

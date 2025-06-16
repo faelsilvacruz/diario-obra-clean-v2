@@ -1,56 +1,7 @@
 import streamlit as st
+from login_page import render_login_page
 from diario_obra_page import render_diario_obra_page
 from documentos_colaborador_page import render_documentos_colaborador_page
-
-# ======= Controle de Usuários e Perfis =======
-USERS = {
-    "admin": {"senha": "1234", "perfil": "admin"},
-    "encarregado": {"senha": "obra123", "perfil": "encarregado"},
-    "joao": {"senha": "colab123", "perfil": "colaborador"},
-    "maria": {"senha": "colab456", "perfil": "colaborador"}
-}
-
-# ======= Sessão =======
-if "logado" not in st.session_state:
-    st.session_state.logado = False
-    st.session_state.usuario = None
-    st.session_state.perfil = None
-    st.session_state.page = "Login"
-
-def login():
-    st.markdown("""
-        <style>
-            .centered {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 80vh;
-                flex-direction: column;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="centered">', unsafe_allow_html=True)
-    st.title("🔐 Login - RDV Engenharia")
-    usuario = st.text_input("Usuário")
-    senha = st.text_input("Senha", type="password")
-    if st.button("Entrar"):
-        if usuario in USERS and USERS[usuario]["senha"] == senha:
-            st.session_state.logado = True
-            st.session_state.usuario = usuario
-            st.session_state.perfil = USERS[usuario]["perfil"]
-            st.session_state.page = "Home"
-            st.experimental_rerun()
-        else:
-            st.error("Usuário ou senha inválidos.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-def logout():
-    st.session_state.logado = False
-    st.session_state.usuario = None
-    st.session_state.perfil = None
-    st.session_state.page = "Login"
-    st.experimental_rerun()
 
 def render_menu_lateral():
     st.markdown("""
@@ -84,50 +35,50 @@ def render_menu_lateral():
 
     st.sidebar.image("logo_rdv.png", width=200)
     st.sidebar.markdown(f'<div class="sidebar-title">Menu Principal</div>', unsafe_allow_html=True)
-    st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.usuario}</b></div>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.username}</b></div>', unsafe_allow_html=True)
 
-    menu_html = ""
+    menu_itens = []
 
-    # Exibição dinâmica por perfil
-    if st.session_state.perfil in ["admin", "encarregado"]:
-        menu_html += '<a class="sidebar-link" href="?page=Diario">📓 Diário de Obra</a>'
-    menu_html += '<a class="sidebar-link" href="?page=Documentos">📂 Central de Documentos</a>'
-    if st.session_state.perfil == "admin":
-        menu_html += '<a class="sidebar-link" href="?page=Usuarios">👥 Gerenciamento de Usuários</a>'
-    menu_html += '<a class="sidebar-link" href="?page=Sair">🚪 Sair</a>'
+    if st.session_state.role in ["admin", "encarregado"]:
+        menu_itens.append("Diário de Obra")
+    menu_itens.append("Central de Documentos")
 
-    st.sidebar.markdown(menu_html, unsafe_allow_html=True)
+    if st.session_state.role == "admin":
+        menu_itens.append("Gerenciamento de Usuários")
 
-# ======= Roteamento =======
+    menu_itens.append("Sair")
+    escolha = st.sidebar.radio("", menu_itens)
+    return escolha
+
+def logout():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.experimental_rerun()
+
 def main():
-    if not st.session_state.logado:
-        login()
+    if "logged_in" not in st.session_state or not st.session_state.logged_in:
+        render_login_page()
     else:
-        render_menu_lateral()
+        escolha = render_menu_lateral()
 
-        page = st.query_params.get("page") or st.session_state.page
-
-        if page == "Diario":
-            if st.session_state.perfil in ["admin", "encarregado"]:
+        if escolha == "Diário de Obra":
+            if st.session_state.role in ["admin", "encarregado"]:
                 render_diario_obra_page()
             else:
                 st.error("Você não tem permissão para acessar o Diário de Obra.")
 
-        elif page == "Documentos":
+        elif escolha == "Central de Documentos":
             render_documentos_colaborador_page()
 
-        elif page == "Usuarios":
-            if st.session_state.perfil == "admin":
+        elif escolha == "Gerenciamento de Usuários":
+            if st.session_state.role == "admin":
                 st.title("👥 Gerenciamento de Usuários")
-                st.info("Em breve: módulo para cadastro e controle de usuários.")
+                st.info("Módulo de gerenciamento ainda será desenvolvido.")
             else:
                 st.error("Acesso restrito ao administrador.")
 
-        elif page == "Sair":
+        elif escolha == "Sair":
             logout()
-
-        else:
-            st.title("Bem-vindo ao Sistema RDV Engenharia")
 
 if __name__ == "__main__":
     main()

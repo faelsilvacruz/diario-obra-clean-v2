@@ -46,10 +46,16 @@ def delete_user(username):
 def render_user_management_page():
     st.title("👥 Gerenciamento de Usuários")
 
+    # Controle de estado para manter a aba selecionada
     if "user_aba" not in st.session_state:
         st.session_state.user_aba = "Listar Usuários"
 
-    aba = st.radio("Selecione uma ação:", ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"], index=["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"].index(st.session_state.user_aba))
+    aba = st.radio(
+        "Selecione uma ação:",
+        ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"],
+        index=["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"].index(st.session_state.user_aba),
+        key="aba_user"
+    )
 
     st.session_state.user_aba = aba
 
@@ -78,7 +84,7 @@ def render_user_management_page():
         st.subheader("✏️ Editar Usuário Existente")
         usuarios = [u[0] for u in view_all_users()]
         if usuarios:
-            usuario_alvo = st.selectbox("Selecione o Usuário", usuarios)
+            usuario_alvo = st.selectbox("Selecione o Usuário", usuarios, key="edit_user")
             nova_senha = st.text_input("Nova Senha (deixe em branco para manter a atual)", type="password", key="edit_pass")
             novo_role = st.selectbox("Novo Perfil", ["admin", "encarregado", "colaborador"], key="edit_role")
             if st.button("Atualizar Usuário"):

@@ -189,7 +189,7 @@ def upload_para_drive_seguro(pdf_buffer, nome_arquivo):
         if creds is None:
             raise Exception("Credenciais do Google Drive não carregadas.")
         pdf_buffer.seek(0)
-        service = build("drive", "v3", credentials=creds, static_discovery=False)
+        service = build("drive", "v3", credentials=creds, static_discovery=False, cache_discovery=False)
         media = MediaIoBaseUpload(pdf_buffer, mimetype='application/pdf', resumable=True)
         file_metadata = {'name': nome_arquivo, 'parents': [DRIVE_FOLDER_ID]}
         file = service.files().create(

@@ -16,124 +16,139 @@ from reportlab.lib.enums import TA_LEFT
 import yagmail
 import streamlit as st
 
+import os
+import io
+from datetime import datetime
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.colors import black, lightgrey
+from PIL import Image as PILImage
+
 LOGO_PDF_PATH = "LOGO_RDV_AZUL-sem fundo.png"
 
 def gerar_pdf(registro, fotos_paths):
     buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    margem = 30
+    y = height - margem
+
+    # Função para adicionar uma linha de texto
+    def linha(texto, tamanho=10, negrito=False, espaco=15):
+        nonlocal y
+        if y < 50:
+            c.showPage()
+            y = height - margem
+        if negrito:
+            c.setFont("Helvetica-Bold", tamanho)
+        else:
+            c.setFont("Helvetica", tamanho)
+        c.drawString(margem, y, texto)
+        y -= espaco
+
+    # LOGO
     try:
-        c = canvas.Canvas(buffer, pagesize=A4)
-        width, height = A4
-        margem = 30
-
-        def draw_text_area(c, text, x, y_start, width_max, font_size=10, line_height=14):
-            styles = getSampleStyleSheet()
-            style = ParagraphStyle(
-                'Custom',
-                fontName='Helvetica',
-                fontSize=font_size,
-                leading=line_height
-            )
-            text = text.replace('\n', '<br/>')
-            p = Paragraph(text, style)
-            text_width, text_height = p.wrapOn(c, width_max, A4[1])
-            actual_y = y_start - text_height
-            p.drawOn(c, x, actual_y)
-            return actual_y - line_height
-
-        c.setFillColor(HexColor("#0F2A4D"))
-        c.rect(0, height-80, width, 80, fill=True, stroke=False)
-        c.setFillColor(white)
-        c.setFont("Helvetica-Bold", 18)
-        c.drawCentredString(width/2, height-50, "DIÁRIO DE OBRA")
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(width/2, height-70, "RDV ENGENHARIA")
         if os.path.exists(LOGO_PDF_PATH):
+            logo = ImageReader(LOGO_PDF_PATH)
+            c.drawImage(logo, margem, y - 50, width=120, height=40, mask='auto')
+    except Exception as e:
+        print(f"Erro ao inserir logo: {e}")
+
+    y -= 60
+    linha("DIÁRIO DE OBRA", tamanho=14, negrito=True, espaco=20)
+
+    # Cabeçalho geral
+    for campo in ["Obra", "Local", "Data", "Contrato", "Clima"]:
+        valor = registro.get(campo, "")
+        if valor:
+            linha(f"{campo.upper()}: {valor}", tamanho=10, negrito=True)
+
+    # Máquinas
+    linha("")
+    linha("Máquinas e Equipamentos:", negrito=True)
+    linha(registro.get("Máquinas", " - "))
+
+    # Serviços Executados
+    linha("")
+    linha("Serviços Executados:", negrito=True)
+    linha(registro.get("Serviços", " - "), tamanho=10, espaco=15)
+
+    # Lista de Colaboradores
+    colaboradores = registro.get("Colaboradores", [])
+    if colaboradores:
+        linha("")
+        linha("NOME              FUNÇÃO              ENTRADA   SAÍDA", tamanho=10, negrito=True)
+        for colab in colaboradores:
+            nome = colab.get("Nome", "")
+            funcao = colab.get("Função", "")
+            entrada = colab.get("Entrada", "")
+            saida = colab.get("Saída", "")
+            linha(f"{nome:<20} {funcao:<20} {entrada:<8} {saida:<8}", tamanho=9, espaco=12)
+
+    # Controle de Documentação
+    linha("")
+    linha("Controle de Documentação de Segurança:", negrito=True)
+    linha(f"Hora de Liberação da LT: {registro.get('Hora_LT', '')}")
+    linha(f"Hora de Liberação da APR: {registro.get('Hora_APR', '')}")
+    linha(f"Data da APR vigente: {registro.get('Data_APR', '')}")
+    linha(f"Número/Código da APR: {registro.get('Codigo_APR', '')}")
+
+    # Ocorrências
+    linha("")
+    linha("Ocorrências:", negrito=True)
+    linha(registro.get("Ocorrencias", " - "), tamanho=10, espaco=15)
+
+    # Responsável Técnico
+    linha("")
+    linha("Responsável Técnico", negrito=True)
+    linha(f"Nome: {registro.get('Responsavel', '')}")
+
+    # Fiscalização
+    linha("")
+    linha("Fiscalização", negrito=True)
+    linha(f"Nome: {registro.get('Fiscalizacao', '')}")
+
+    # Rodapé - Data de Geração
+    c.setFont("Helvetica-Oblique", 7)
+    c.setFillColor(lightgrey)
+    c.drawRightString(width - margem, margem, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+    # Inserção das Fotos
+    if fotos_paths:
+        c.showPage()
+        y = height - margem
+        linha("REGISTRO FOTOGRÁFICO", tamanho=12, negrito=True, espaco=20)
+
+        for foto_path in fotos_paths:
             try:
-                logo = ImageReader(LOGO_PDF_PATH)
-                c.drawImage(logo, 30, height-70, width=100, height=50, preserveAspectRatio=True)
-            except Exception:
-                pass
+                img = PILImage.open(foto_path)
+                img_width, img_height = img.size
+                aspect = img_height / img_width
 
-        y = height - 100
+                max_width = width - 2 * margem
+                max_height = 400
 
-        info_data = [
-            ["OBRA:", registro.get("Obra", "N/A")],
-            ["LOCAL:", registro.get("Local", "N/A")],
-            ["DATA:", registro.get("Data", "N/A")],
-            ["CONTRATO:", registro.get("Contrato", "N/A")],
-            ["CLIMA:", registro.get("Clima", "N/A")]
-        ]
-        col2_width = width - 100 - (2 * margem)
-        table = Table(info_data, colWidths=[100, col2_width])
-        table.setStyle(TableStyle([
-            ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,-1), 10),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6)
-        ]))
-        table_width, table_height = table.wrapOn(c, width - 2*margem, height)
-        table.drawOn(c, margem, y - table_height)
-        y -= table_height + 10
+                final_width = max_width
+                final_height = final_width * aspect
 
-        y = draw_text_area(c, f"Máquinas e Equipamentos:\n{registro.get('Máquinas', '')}", margem, y, width - 2*margem)
-        y = draw_text_area(c, f"Serviços Executados:\n{registro.get('Serviços', '')}", margem, y, width - 2*margem)
+                if final_height > max_height:
+                    final_height = max_height
+                    final_width = final_height / aspect
 
-        try:
-            efetivo_data = json.loads(registro.get("Efetivo", "[]"))
-        except Exception:
-            efetivo_data = []
+                if y - final_height < margem:
+                    c.showPage()
+                    y = height - margem
 
-        data_efetivo = [["NOME", "FUNÇÃO", "ENTRADA", "SAÍDA"]]
-        for item in efetivo_data:
-            data_efetivo.append([
-                item.get("Nome", ""),
-                item.get("Função", ""),
-                item.get("Entrada", ""),
-                item.get("Saída", "")
-            ])
-        while len(data_efetivo) < 7:
-            data_efetivo.append(["", "", "", ""])
+                c.drawImage(foto_path, margem, y - final_height, width=final_width, height=final_height)
+                y -= final_height + 20
+            except Exception as e:
+                print(f"Erro ao adicionar foto: {e}")
 
-        table = Table(data_efetivo, colWidths=[150, 100, 65, 65])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), HexColor("#0F2A4D")),
-            ('TEXTCOLOR', (0,0), (-1,0), white),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,0), 9),
-            ('FONTSIZE', (0,1), (-1,-1), 8),
-            ('ALIGN', (0,0), (-1,0), 'CENTER'),
-            ('GRID', (0,0), (-1,-1), 0.5, lightgrey),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE')
-        ]))
-        table_width, table_height = table.wrapOn(c, width - 2*margem, height)
-        table.drawOn(c, margem, y - table_height)
-        y -= table_height + 10
+    c.save()
+    buffer.seek(0)
+    return buffer
 
-        y = draw_text_area(c, f"Controle de Documentação de Segurança:\n"
-                              f"Hora de Liberação da LT: {registro.get('Hora LT', '')}\n"
-                              f"Hora de Liberação da APR: {registro.get('Hora APR', '')}\n"
-                              f"Data da APR vigente: {registro.get('Data APR', '')}\n"
-                              f"Número/Código da APR: {registro.get('Numero APR', '')}",
-                              margem, y, width - 2*margem)
-
-        y = draw_text_area(c, f"Ocorrências:\n{registro.get('Ocorrências', '')}", margem, y, width - 2*margem)
-
-        footer_h = 80
-        c.setFont("Helvetica", 9)
-        c.setFillColor(darkgrey)
-        c.rect(margem, margem, width - 2*margem, 70)
-        c.line(margem + 50, margem + 45, margem + 200, margem + 45)
-        c.drawCentredString(margem + 125, margem + 30, "Responsável Técnico")
-        c.drawCentredString(margem + 125, margem + 15, f"Nome: {registro.get('Responsável Empresa', '')}")
-        c.line(width - margem - 200, margem + 45, width - margem - 50, margem + 45)
-        c.drawCentredString(width - margem - 125, margem + 30, "Fiscalização")
-        c.drawCentredString(width - margem - 125, margem + 15, f"Nome: {registro.get('Fiscalização', '')}")
-
-        c.setFillColor(black)
-        c.drawString(margem + 5, margem + 5, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-        c.save()
-        buffer.seek(0)
-        return buffer
     except Exception as e:
         print(f"Erro ao gerar PDF: {e}")
         return None

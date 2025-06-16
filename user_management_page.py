@@ -46,7 +46,7 @@ def delete_user(username):
 def render_user_management_page():
     st.title("👥 Gerenciamento de Usuários")
 
-    aba = st.radio("Selecione uma ação:", ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário"])
+    aba = st.radio("Selecione uma ação:", ["Listar Usuários", "Adicionar Usuário", "Editar Usuário", "Excluir Usuário", "Status de Troca de Senha"])
 
     if aba == "Listar Usuários":
         st.subheader("📋 Lista de Usuários")
@@ -84,3 +84,10 @@ def render_user_management_page():
         if st.button(f"Excluir '{usuario_delete}'"):
             delete_user(usuario_delete)
             st.success(f"Usuário '{usuario_delete}' excluído com sucesso!")
+
+    elif aba == "Status de Troca de Senha":
+        st.subheader("🔑 Status de Troca de Senha")
+        usuarios = view_all_users()
+        for u in usuarios:
+            status = "✅ Sim" if u[2] == 1 else "❌ Não"
+            st.markdown(f"- **Usuário:** `{u[0]}` | **Perfil:** `{u[1]}` | **Senha Alterada:** {status}")

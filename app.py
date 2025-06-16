@@ -37,28 +37,28 @@ def main():
         with col1:
             if st.button("📓 Diário"):
                 st.session_state.page = "diario"
-                st.experimental_rerun()
+                st.rerun()
 
         with col2:
             if st.button("📂 Documentos"):
                 st.session_state.page = "documentos"
-                st.experimental_rerun()
+                st.rerun()
 
         with col3:
             if st.button("👥 Usuários"):
                 st.session_state.page = "usuarios"
                 st.session_state.user_aba = "Listar Usuários"
-                st.experimental_rerun()
+                st.rerun()
 
         with col4:
             if st.button("💾 Backup"):
                 st.session_state.page = "backup"
-                st.experimental_rerun()
+                st.rerun()
 
         with col5:
             if st.button("🔎 Inspecionar"):
                 st.session_state.page = "inspecionar"
-                st.experimental_rerun()
+                st.rerun()
 
         with col6:
             if st.button("🚪 Sair"):

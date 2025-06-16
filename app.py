@@ -41,7 +41,7 @@ def render_menu_lateral():
         </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.image("logo_rdv.png", width=200)
+    st.sidebar.image("LOGO_RDV_AZUL.png", width=200)
     st.sidebar.markdown(f'<div class="sidebar-title">Menu Principal</div>', unsafe_allow_html=True)
     st.sidebar.markdown(f'<div class="sidebar-user">👤 Usuário: <b>{st.session_state.username}</b></div>', unsafe_allow_html=True)
 

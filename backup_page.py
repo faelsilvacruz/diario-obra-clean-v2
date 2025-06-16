@@ -6,7 +6,7 @@ import shutil
 def listar_usuarios():
     try:
         conn = sqlite3.connect("users.db")
-        df = pd.read_sql_query("SELECT username, role FROM users", conn)
+        df = pd.read_sql_query("SELECT username, role FROM userstable", conn)
         conn.close()
         return df
     except Exception as e:

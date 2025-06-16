@@ -1,4 +1,3 @@
-
 import streamlit as st
 from login_page import render_login_page, render_password_change_page
 from diario_obra_page import render_diario_obra_page
@@ -29,67 +28,52 @@ def main():
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
     else:
-        if st.session_state.get("page") == "alterar_senha":
-            render_password_change_page()
-            return
-
-        st.title(f"📋 Aplicativo RDV Engenharia - Usuário: {st.session_state.username}")
+        if "page" not in st.session_state:
+            st.session_state.page = "documentos"
 
         col1, col2, col3, col4, col5, col6 = st.columns(6)
-
         st.write("---")
-        pagina = None
 
         with col1:
             if st.button("📓 Diário"):
-                pagina = "diario"
+                st.session_state.page = "diario"
+                st.experimental_rerun()
 
         with col2:
             if st.button("📂 Documentos"):
-                pagina = "documentos"
+                st.session_state.page = "documentos"
+                st.experimental_rerun()
 
         with col3:
             if st.button("👥 Usuários"):
-                pagina = "usuarios"
+                st.session_state.page = "usuarios"
+                st.session_state.user_aba = "Listar Usuários"
+                st.experimental_rerun()
 
         with col4:
             if st.button("💾 Backup"):
-                pagina = "backup"
+                st.session_state.page = "backup"
+                st.experimental_rerun()
 
         with col5:
             if st.button("🔎 Inspecionar"):
-                pagina = "inspecionar"
+                st.session_state.page = "inspecionar"
+                st.experimental_rerun()
 
         with col6:
             if st.button("🚪 Sair"):
                 logout()
 
-        if pagina == "diario":
-            if st.session_state.role in ["admin", "encarregado"]:
-                render_diario_obra_page()
-            else:
-                st.error("Você não tem permissão para acessar o Diário de Obra.")
-
-        elif pagina == "documentos":
+        if st.session_state.page == "diario":
+            render_diario_obra_page()
+        elif st.session_state.page == "documentos":
             render_documentos_colaborador_page()
-
-        elif pagina == "usuarios":
-            if st.session_state.role == "admin":
-                render_user_management_page()
-            else:
-                st.error("Acesso restrito ao administrador.")
-
-        elif pagina == "backup":
-            if st.session_state.role == "admin":
-                render_backup_page()
-            else:
-                st.error("Acesso restrito ao administrador.")
-
-        elif pagina == "inspecionar":
-            if st.session_state.role == "admin":
-                render_inspecionar_banco_page()
-            else:
-                st.error("Acesso restrito ao administrador.")
+        elif st.session_state.page == "usuarios":
+            render_user_management_page()
+        elif st.session_state.page == "backup":
+            render_backup_page()
+        elif st.session_state.page == "inspecionar":
+            render_inspecionar_banco_page()
 
 if __name__ == "__main__":
     main()

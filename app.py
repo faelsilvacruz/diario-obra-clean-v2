@@ -31,39 +31,42 @@ def main():
         if "page" not in st.session_state:
             st.session_state.page = "documentos"
 
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
-        st.write("---")
+        # Só mostra os botões do topo se o usuário não estiver na tela de troca de senha
+        if st.session_state.page != "alterar_senha":
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
+            st.write("---")
 
-        with col1:
-            if st.button("📓 Diário"):
-                st.session_state.page = "diario"
-                st.rerun()
+            with col1:
+                if st.button("📓 Diário"):
+                    st.session_state.page = "diario"
+                    st.rerun()
 
-        with col2:
-            if st.button("📂 Documentos"):
-                st.session_state.page = "documentos"
-                st.rerun()
+            with col2:
+                if st.button("📂 Documentos"):
+                    st.session_state.page = "documentos"
+                    st.rerun()
 
-        with col3:
-            if st.button("👥 Usuários"):
-                st.session_state.page = "usuarios"
-                st.session_state.user_aba = "Listar Usuários"
-                st.rerun()
+            with col3:
+                if st.button("👥 Usuários"):
+                    st.session_state.page = "usuarios"
+                    st.session_state.user_aba = "Listar Usuários"
+                    st.rerun()
 
-        with col4:
-            if st.button("💾 Backup"):
-                st.session_state.page = "backup"
-                st.rerun()
+            with col4:
+                if st.button("💾 Backup"):
+                    st.session_state.page = "backup"
+                    st.rerun()
 
-        with col5:
-            if st.button("🔎 Inspecionar"):
-                st.session_state.page = "inspecionar"
-                st.rerun()
+            with col5:
+                if st.button("🔎 Inspecionar"):
+                    st.session_state.page = "inspecionar"
+                    st.rerun()
 
-        with col6:
-            if st.button("🚪 Sair"):
-                logout()
+            with col6:
+                if st.button("🚪 Sair"):
+                    logout()
 
+        # Renderizar a página correspondente
         if st.session_state.page == "diario":
             render_diario_obra_page()
         elif st.session_state.page == "documentos":
@@ -74,6 +77,8 @@ def main():
             render_backup_page()
         elif st.session_state.page == "inspecionar":
             render_inspecionar_banco_page()
+        elif st.session_state.page == "alterar_senha":
+            render_password_change_page()
 
 if __name__ == "__main__":
     main()

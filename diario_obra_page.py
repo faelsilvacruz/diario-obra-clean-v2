@@ -8,7 +8,7 @@ import shutil
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
-from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email, creds, temp_icon_path_for_cleanup, LOGO_PDF_PATH, DRIVE_FOLDER_ID
+from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email, creds, LOGO_PDF_PATH, DRIVE_FOLDER_ID
 
 def render_diario_obra_page():
     @st.cache_data(ttl=3600)

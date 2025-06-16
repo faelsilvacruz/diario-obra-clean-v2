@@ -56,7 +56,7 @@ def render_login_page():
             if st.session_state.senha_alterada == 0:
                 st.session_state.page = "alterar_senha"
             else:
-                st.session_state.page = "home"
+                st.session_state.page = "documentos"
 
             st.rerun()
         else:

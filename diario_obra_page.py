@@ -130,6 +130,7 @@ def render_diario_obra_page():
                 st.error("Falha ao gerar o PDF.")
                 st.stop()
 
+        pdf_buffer.seek(0)
         st.download_button(
             label="📥 Baixar Relatório PDF",
             data=pdf_buffer,

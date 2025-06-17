@@ -150,7 +150,7 @@ Número/Código da APR: {numero_apr}"""
 </ul>"""
 
         pdf_buffer.seek(0)
-        if enviar_email(["administrativo@rdvengenharia.com.br; comercial@rdvengenharia.com.br"], assunto, corpo, pdf_buffer, nome_pdf):
+        if enviar_email(["administrativo@rdvengenharia.com.br"; "comercial@rdvengenharia.com.br"], assunto, corpo, pdf_buffer, nome_pdf):
             st.success("E-mail enviado com sucesso!")
         else:
             st.error("Falha ao enviar o e-mail.")

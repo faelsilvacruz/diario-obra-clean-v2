@@ -1,26 +1,32 @@
-import streamlit as st
 import sqlite3
+import pandas as pd
 
-def run_migration():
-    conn = sqlite3.connect('users.db')
+def migrar_obras_csv_para_banco():
+    try:
+        obras_df = pd.read_csv("obras.csv")
+    except Exception as e:
+        print(f"Erro ao ler o arquivo obras.csv: {e}")
+        return
+
+    conn = sqlite3.connect('diario_obra.db')
     c = conn.cursor()
 
-    try:
-        c.execute('ALTER TABLE userstable ADD COLUMN senha_alterada INTEGER DEFAULT 0;')
-        conn.commit()
-        st.success("✅ Campo 'senha_alterada' adicionado com sucesso ao banco de dados!")
-    except Exception as e:
-        if "duplicate column name" in str(e).lower():
-            st.info("⚠️ O campo 'senha_alterada' já existe no banco.")
-        else:
-            st.error(f"❌ Erro ao alterar a tabela: {e}")
-    finally:
-        conn.close()
+    # Cria a tabela de obras se ainda não existir
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS obras (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL
+        )
+    ''')
 
-def main():
-    st.title("🛠️ Migração do Banco de Dados - users.db")
-    if st.button("Executar Migração"):
-        run_migration()
+    # Insere as obras
+    for index, row in obras_df.iterrows():
+        nome_obra = row["Nome"].strip()
+        c.execute('INSERT INTO obras (nome) VALUES (?)', (nome_obra,))
+
+    conn.commit()
+    conn.close()
+    print("Migração das obras concluída com sucesso!")
 
 if __name__ == "__main__":
-    main()
+    migrar_obras_csv_para_banco()

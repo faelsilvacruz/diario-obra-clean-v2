@@ -16,7 +16,7 @@ def render_admin_page():
                 else:
                     add_obra(novo_nome_obra.strip())
                     st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()
 
     # ===== Exclusão de Obras =====
     with st.expander("❌ Excluir Obra"):
@@ -31,7 +31,7 @@ def render_admin_page():
                 if st.button("Excluir Obra"):
                     excluir_obra_por_id(obra_id)
                     st.success("Obra excluída com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()
         else:
             st.info("Nenhuma obra cadastrada para excluir.")
 
@@ -53,7 +53,7 @@ def render_admin_page():
                     obra_id = obras_dict[obra_selecionada]
                     add_contrato(obra_id, nome_contrato.strip())
                     st.success(f"Contrato '{nome_contrato}' cadastrado com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()
 
     # ===== Cadastro de Colaboradores =====
     with st.expander("👷 Cadastrar Novo Colaborador"):
@@ -69,4 +69,4 @@ def render_admin_page():
                 else:
                     add_colaborador(nome_colaborador.strip(), funcao.strip())
                     st.success(f"Colaborador '{nome_colaborador}' cadastrado com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()

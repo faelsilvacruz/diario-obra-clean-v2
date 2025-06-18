@@ -18,15 +18,17 @@ def render_diario_obra_page():
             st.error(f"Erro ao ler o arquivo '{nome_arquivo}': {e}")
             return pd.DataFrame()
 
-    # Carrega contratos do CSV (vamos migrar isso pro banco em breve)
-    contratos_df = carregar_arquivo_csv("contratos.csv")
-    colab_df = pd.DataFrame()
-    colaboradores_lista = []
-
-    # ===== Obras direto do banco =====
+    # ==== Obras direto do banco ====
     obras_do_banco = get_obras()
     obras_lista = [""] + [obra[1] for obra in obras_do_banco] + ["❗ Obra não encontrada? Fale com o Administrativo"]
 
+    # ==== Contratos (temporariamente ainda via CSV) ====
+    contratos_df = carregar_arquivo_csv("contratos.csv")
+    contratos_lista = [""] + contratos_df["Nome"].tolist() if not contratos_df.empty else []
+
+    # ==== Colaboradores ====
+    colab_df = pd.DataFrame()
+    colaboradores_lista = []
     try:
         colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
         if not colab_df.empty and {"Nome", "Função"}.issubset(colab_df.columns):
@@ -37,17 +39,15 @@ def render_diario_obra_page():
             colaboradores_lista = colab_df["Nome"].tolist()
     except Exception as e:
         st.error(f"Erro ao carregar 'colaboradores.csv': {e}")
-        colab_df = pd.DataFrame()
 
-    if contratos_df.empty:
+    if not contratos_lista:
         st.error("Erro: Contratos não encontrados. Verifique o arquivo 'contratos.csv'.")
         st.stop()
 
-    contratos_lista = [""] + contratos_df["Nome"].tolist()
-
+    # ==== Formulário ====
     st.title("Relatório Diário de Obra - RDV Engenharia")
-    obra = st.selectbox("Obra", obras_lista)
 
+    obra = st.selectbox("Obra", obras_lista)
     if obra == "❗ Obra não encontrada? Fale com o Administrativo":
         st.warning("Por favor, entre em contato com o Administrativo para cadastrar a nova obra.")
         st.stop()

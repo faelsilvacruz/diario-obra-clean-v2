@@ -22,6 +22,21 @@ def render_diario_obra_page():
     contratos_df = carregar_arquivo_csv("contratos.csv")
     colab_df = pd.DataFrame()
     colaboradores_lista = []
+    
+    # ===== NOVO BLOCO: Lendo obras direto do banco de dados =====
+    obras_do_banco = get_obras()
+
+    st.title("📋 Diário de Obra - Teste de Leitura de Banco")
+
+    if obras_do_banco:
+        st.subheader("Obras cadastradas no banco de dados:")
+        for obra in obras_do_banco:
+            st.write(f"ID: {obra[0]} - Nome: {obra[1]}")
+    else:
+        st.info("Nenhuma obra cadastrada ainda no banco de dados.")
+
+    try:
+        colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
 
     try:
         colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)

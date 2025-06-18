@@ -28,3 +28,11 @@ def add_colaborador(nome_colaborador, funcao):
     c.execute('INSERT INTO colaboradores (nome, funcao) VALUES (?, ?)', (nome_colaborador, funcao))
     conn.commit()
     conn.close()
+    
+def excluir_obra_por_id(obra_id):
+    conn = sqlite3.connect('diario_obra.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM obras WHERE id = ?', (obra_id,))
+    conn.commit()
+    conn.close()
+

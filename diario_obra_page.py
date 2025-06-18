@@ -22,21 +22,23 @@ def render_diario_obra_page():
     contratos_df = carregar_arquivo_csv("contratos.csv")
     colab_df = pd.DataFrame()
     colaboradores_lista = []
-    
+
     # ===== NOVO BLOCO: Lendo obras direto do banco de dados =====
     obras_do_banco = get_obras()
+
     st.subheader("📌 Cadastro de Nova Obra")
 
-with st.form("form_cadastro_obra"):
-    novo_nome_obra = st.text_input("Nome da nova obra")
-    submitted = st.form_submit_button("Cadastrar Obra")
+    with st.form("form_cadastro_obra"):
+        novo_nome_obra = st.text_input("Nome da nova obra")
+        submitted = st.form_submit_button("Cadastrar Obra")
 
-    if submitted:
-        if novo_nome_obra.strip() == "":
-            st.error("Por favor, preencha o nome da obra.")
-        else:
-            add_obra(novo_nome_obra.strip())
-            st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
+        if submitted:
+            if novo_nome_obra.strip() == "":
+                st.error("Por favor, preencha o nome da obra.")
+            else:
+                add_obra(novo_nome_obra.strip())
+                st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
+                st.experimental_rerun()
 
     st.title("📋 Diário de Obra - Teste de Leitura de Banco")
 

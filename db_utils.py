@@ -8,6 +8,22 @@ def get_obras():
     conn.close()
     return obras
 
+def get_contratos():
+    conn = sqlite3.connect('diario_obra.db')
+    c = conn.cursor()
+    c.execute('SELECT id, nome FROM contratos')
+    contratos = c.fetchall()
+    conn.close()
+    return contratos
+
+def get_colaboradores():
+    conn = sqlite3.connect('diario_obra.db')
+    c = conn.cursor()
+    c.execute('SELECT id, nome FROM colaboradores')
+    colaboradores = c.fetchall()
+    conn.close()
+    return colaboradores
+
 def add_obra(nome_obra):
     conn = sqlite3.connect('diario_obra.db')
     c = conn.cursor()
@@ -28,7 +44,7 @@ def add_colaborador(nome_colaborador, funcao):
     c.execute('INSERT INTO colaboradores (nome, funcao) VALUES (?, ?)', (nome_colaborador, funcao))
     conn.commit()
     conn.close()
-    
+
 def excluir_obra_por_id(obra_id):
     conn = sqlite3.connect('diario_obra.db')
     c = conn.cursor()
@@ -36,3 +52,16 @@ def excluir_obra_por_id(obra_id):
     conn.commit()
     conn.close()
 
+def excluir_contrato_por_id(contrato_id):
+    conn = sqlite3.connect('diario_obra.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM contratos WHERE id = ?', (contrato_id,))
+    conn.commit()
+    conn.close()
+
+def excluir_colaborador_por_id(colaborador_id):
+    conn = sqlite3.connect('diario_obra.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM colaboradores WHERE id = ?', (colaborador_id,))
+    conn.commit()
+    conn.close()

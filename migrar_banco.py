@@ -19,6 +19,9 @@ def migrar_obras_csv_para_banco():
         )
     ''')
 
+    # Limpa a tabela antes de reimportar (se quiser evitar duplicados)
+    c.execute('DELETE FROM obras')
+
     # Insere as obras
     for index, row in obras_df.iterrows():
         nome_obra = row["Nome"].strip()
@@ -26,7 +29,7 @@ def migrar_obras_csv_para_banco():
 
     conn.commit()
     conn.close()
-    print("Migração das obras concluída com sucesso!")
+    print("✅ Migração das obras concluída com sucesso!")
 
 if __name__ == "__main__":
     migrar_obras_csv_para_banco()

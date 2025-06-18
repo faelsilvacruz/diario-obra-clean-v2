@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email
+from db_utils import get_obras
 
 def render_diario_obra_page():
     @st.cache_data(ttl=3600)

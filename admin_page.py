@@ -52,4 +52,4 @@ def render_admin_page():
                 else:
                     add_colaborador(nome_colaborador.strip(), funcao.strip())
                     st.success(f"Colaborador '{nome_colaborador}' cadastrado com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()

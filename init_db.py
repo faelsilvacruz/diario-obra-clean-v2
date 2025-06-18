@@ -30,3 +30,55 @@ def init_db():
     conn_holerite.close()
 
     print("Bancos criados com sucesso!")
+    # Criar diario_obra.db
+conn_diario = sqlite3.connect('diario_obra.db')
+c_diario = conn_diario.cursor()
+
+# Tabela de Obras
+c_diario.execute('''
+    CREATE TABLE IF NOT EXISTS obras (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL
+    )
+''')
+
+# Tabela de Contratos
+c_diario.execute('''
+    CREATE TABLE IF NOT EXISTS contratos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        obra_id INTEGER,
+        nome TEXT NOT NULL,
+        FOREIGN KEY (obra_id) REFERENCES obras(id)
+    )
+''')
+
+# Tabela de Colaboradores
+c_diario.execute('''
+    CREATE TABLE IF NOT EXISTS colaboradores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        funcao TEXT
+    )
+''')
+
+# Tabela de Diário de Obra
+c_diario.execute('''
+    CREATE TABLE IF NOT EXISTS diario_obra (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        data TEXT NOT NULL,
+        obra_id INTEGER,
+        contrato_id INTEGER,
+        frente_servico TEXT,
+        atividades TEXT,
+        observacoes TEXT,
+        responsavel_empresa TEXT,
+        fiscalizacao TEXT,
+        FOREIGN KEY (obra_id) REFERENCES obras(id),
+        FOREIGN KEY (contrato_id) REFERENCES contratos(id)
+    )
+''')
+
+conn_diario.commit()
+conn_diario.close()
+
+print("Banco do Diário de Obra criado com sucesso!")

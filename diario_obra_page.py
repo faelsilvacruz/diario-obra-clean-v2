@@ -18,11 +18,12 @@ def render_diario_obra_page():
             st.error(f"Erro ao ler o arquivo '{nome_arquivo}': {e}")
             return pd.DataFrame()
 
+    # Carrega contratos do CSV (vamos migrar isso pro banco em breve)
     contratos_df = carregar_arquivo_csv("contratos.csv")
     colab_df = pd.DataFrame()
     colaboradores_lista = []
 
-    # ===== Agora lendo as obras direto do banco =====
+    # ===== Obras direto do banco =====
     obras_do_banco = get_obras()
     obras_lista = [""] + [obra[1] for obra in obras_do_banco] + ["❗ Obra não encontrada? Fale com o Administrativo"]
 
@@ -47,7 +48,6 @@ def render_diario_obra_page():
     st.title("Relatório Diário de Obra - RDV Engenharia")
     obra = st.selectbox("Obra", obras_lista)
 
-    # Caso o usuário escolha a opção de obra não encontrada
     if obra == "❗ Obra não encontrada? Fale com o Administrativo":
         st.warning("Por favor, entre em contato com o Administrativo para cadastrar a nova obra.")
         st.stop()

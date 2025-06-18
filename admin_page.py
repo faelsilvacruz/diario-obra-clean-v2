@@ -16,7 +16,7 @@ def render_admin_page():
                 else:
                     add_obra(novo_nome_obra.strip())
                     st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()
 
     # ===== Cadastro de Contratos =====
     with st.expander("📄 Cadastrar Novo Contrato"):

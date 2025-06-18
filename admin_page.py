@@ -1,5 +1,5 @@
 import streamlit as st
-from db_utils import get_obras, add_obra, add_contrato, add_colaborador
+from db_utils import get_obras, add_obra, add_contrato, add_colaborador, excluir_obra_por_id
 
 def render_admin_page():
     st.title("⚙️ Administração de Cadastros")
@@ -16,7 +16,24 @@ def render_admin_page():
                 else:
                     add_obra(novo_nome_obra.strip())
                     st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
-                    st.rerun()
+                    st.experimental_rerun()
+
+    # ===== Exclusão de Obras =====
+    with st.expander("❌ Excluir Obra"):
+        obras = get_obras()
+        if obras:
+            opcoes_obras = [f"{obra[0]} - {obra[1]}" for obra in obras]
+            obra_selecionada = st.selectbox("Selecione a obra que deseja excluir:", opcoes_obras, key="excluir_obra")
+
+            if obra_selecionada:
+                obra_id = int(obra_selecionada.split(" - ")[0])
+
+                if st.button("Excluir Obra"):
+                    excluir_obra_por_id(obra_id)
+                    st.success("Obra excluída com sucesso!")
+                    st.experimental_rerun()
+        else:
+            st.info("Nenhuma obra cadastrada para excluir.")
 
     # ===== Cadastro de Contratos =====
     with st.expander("📄 Cadastrar Novo Contrato"):
@@ -36,7 +53,7 @@ def render_admin_page():
                     obra_id = obras_dict[obra_selecionada]
                     add_contrato(obra_id, nome_contrato.strip())
                     st.success(f"Contrato '{nome_contrato}' cadastrado com sucesso!")
-                    st.rerun()
+                    st.experimental_rerun()
 
     # ===== Cadastro de Colaboradores =====
     with st.expander("👷 Cadastrar Novo Colaborador"):
@@ -52,4 +69,4 @@ def render_admin_page():
                 else:
                     add_colaborador(nome_colaborador.strip(), funcao.strip())
                     st.success(f"Colaborador '{nome_colaborador}' cadastrado com sucesso!")
-                    st.rerun()
+                    st.experimental_rerun()

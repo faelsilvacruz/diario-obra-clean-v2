@@ -23,32 +23,6 @@ def render_diario_obra_page():
     colab_df = pd.DataFrame()
     colaboradores_lista = []
 
-    # ===== NOVO BLOCO: Lendo obras direto do banco de dados =====
-    obras_do_banco = get_obras()
-
-    st.subheader("📌 Cadastro de Nova Obra")
-
-    with st.form("form_cadastro_obra"):
-        novo_nome_obra = st.text_input("Nome da nova obra")
-        submitted = st.form_submit_button("Cadastrar Obra")
-
-        if submitted:
-            if novo_nome_obra.strip() == "":
-                st.error("Por favor, preencha o nome da obra.")
-            else:
-                add_obra(novo_nome_obra.strip())
-                st.success(f"Obra '{novo_nome_obra}' cadastrada com sucesso!")
-                st.experimental_rerun()
-
-    st.title("📋 Diário de Obra - Teste de Leitura de Banco")
-
-    if obras_do_banco:
-        st.subheader("Obras cadastradas no banco de dados:")
-        for obra in obras_do_banco:
-            st.write(f"ID: {obra[0]} - Nome: {obra[1]}")
-    else:
-        st.info("Nenhuma obra cadastrada ainda no banco de dados.")
-
     try:
         colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
         if not colab_df.empty and {"Nome", "Função"}.issubset(colab_df.columns):
@@ -69,6 +43,10 @@ def render_diario_obra_page():
 
     st.title("Relatório Diário de Obra - RDV Engenharia")
     obra = st.selectbox("Obra", obras_lista)
+
+    if not obra:
+        st.warning("❗ Obra não encontrada? Entre em contato com o Administrativo para cadastrar.")
+
     local = st.text_input("Local")
     data = st.date_input("Data", datetime.today())
     contrato = st.selectbox("Contrato", contratos_lista)

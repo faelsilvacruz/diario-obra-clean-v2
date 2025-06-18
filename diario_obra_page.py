@@ -37,9 +37,6 @@ def render_diario_obra_page():
 
     try:
         colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
-
-    try:
-        colab_df = pd.read_csv("colaboradores.csv", quotechar='"', skipinitialspace=True)
         if not colab_df.empty and {"Nome", "Função"}.issubset(colab_df.columns):
             colab_df = colab_df.dropna()
             colab_df["Nome"] = colab_df["Nome"].astype(str).str.strip()

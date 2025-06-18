@@ -36,7 +36,7 @@ def render_admin_page():
                     obra_id = obras_dict[obra_selecionada]
                     add_contrato(obra_id, nome_contrato.strip())
                     st.success(f"Contrato '{nome_contrato}' cadastrado com sucesso!")
-                    st.experimental_rerun()
+                    st.rerun()
 
     # ===== Cadastro de Colaboradores =====
     with st.expander("👷 Cadastrar Novo Colaborador"):

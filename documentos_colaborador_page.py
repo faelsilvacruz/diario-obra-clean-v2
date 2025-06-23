@@ -2,10 +2,10 @@ import os
 import streamlit as st
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+import json
 
 # ======= Configuração Google Drive API =======
 SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = os.path.join('credenciais', 'drive_credentials.json')  # Ajuste o caminho se necessário
 
 def listar_arquivos_por_usuario(tipo_documento, username):
     pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # ID da pasta 'documentos' no Google Drive
@@ -21,13 +21,18 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta = tipo_para_subpasta[tipo_documento]
 
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    # ======= Lendo as credenciais direto do Streamlit Secrets =======
+    creds = service_account.Credentials.from_service_account_info(
+        json.loads(st.secrets["google_service_account"]),
+        scopes=SCOPES
     )
     service = build('drive', 'v3', credentials=creds)
 
-    # Buscar pasta do usuário
-    query_pasta_usuario = f"'{pasta_principal_id}' in parents and name = '{username}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    # Buscar a pasta do usuário
+    query_pasta_usuario = (
+        f"'{pasta_principal_id}' in parents and name = '{username}' "
+        f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    )
     resultado_pasta = service.files().list(q=query_pasta_usuario, fields="files(id, name)").execute()
     pastas_usuario = resultado_pasta.get('files', [])
 
@@ -36,8 +41,11 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     pasta_usuario_id = pastas_usuario[0]['id']
 
-    # Buscar subpasta (tipo de documento)
-    query_subpasta = f"'{pasta_usuario_id}' in parents and name = '{subpasta}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    # Buscar a subpasta (tipo de documento)
+    query_subpasta = (
+        f"'{pasta_usuario_id}' in parents and name = '{subpasta}' "
+        f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    )
     resultado_subpasta = service.files().list(q=query_subpasta, fields="files(id, name)").execute()
     subpastas = resultado_subpasta.get('files', [])
 
@@ -46,9 +54,12 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta_id = subpastas[0]['id']
 
-    # Listar arquivos dentro da subpasta
+    # Listar os arquivos dentro da subpasta
     query_arquivos = f"'{subpasta_id}' in parents and trashed = false"
-    resultado_arquivos = service.files().list(q=query_arquivos, fields="files(id, name, webViewLink)").execute()
+    resultado_arquivos = service.files().list(
+        q=query_arquivos,
+        fields="files(id, name, webViewLink)"
+    ).execute()
     return resultado_arquivos.get('files', [])
 
 def render_documentos_colaborador_page():

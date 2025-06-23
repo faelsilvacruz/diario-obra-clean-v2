@@ -2,7 +2,6 @@ import os
 import streamlit as st
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-import json
 
 # ======= Configuração Google Drive API =======
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -21,9 +20,9 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta = tipo_para_subpasta[tipo_documento]
 
-    # ======= Lendo as credenciais direto do Streamlit Secrets =======
+    # ======= Ler as credenciais diretamente do Streamlit Secrets =======
     creds = service_account.Credentials.from_service_account_info(
-        json.loads(st.secrets["google_service_account"]),
+        st.secrets["google_service_account"],
         scopes=SCOPES
     )
     service = build('drive', 'v3', credentials=creds)

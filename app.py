@@ -13,7 +13,11 @@ def logout():
     st.rerun()
 
 def main():
-    st.set_page_config(page_title="App RDV Engenharia", layout="wide")
+    st.set_page_config(
+        page_title="App RDV Engenharia",
+        page_icon="favicon.png",
+        layout="wide"
+    )
 
     st.markdown("""
         <style>

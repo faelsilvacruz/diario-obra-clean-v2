@@ -5,7 +5,8 @@ from documentos_colaborador_page import render_documentos_colaborador_page
 from user_management_page import render_user_management_page
 from backup_page import render_backup_page
 from inspecionar_banco_page import render_inspecionar_banco_page
-from admin_page import render_admin_page  # <<< Import da nova página
+from admin_page import render_admin_page
+from drive_users_db_utils import download_users_db_from_drive
 
 def logout():
     for key in list(st.session_state.keys()):
@@ -19,6 +20,10 @@ def main():
         layout="wide"
     )
 
+    # ===== Download automático do banco de usuários =====
+    download_users_db_from_drive()
+
+    # ===== Estilo visual do app =====
     st.markdown("""
         <style>
         .main {
@@ -30,18 +35,18 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
+    # ===== Login =====
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
     else:
         if "page" not in st.session_state:
             st.session_state.page = "documentos"
 
-        # Só mostra os botões do topo se o usuário não estiver na tela de troca de senha
+        # ===== Menu de navegação =====
         if st.session_state.page != "alterar_senha":
             col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
             st.write("---")
 
-            # Controle de acesso por perfil
             user_role = st.session_state.get("role", "")
 
             with col1:
@@ -51,7 +56,7 @@ def main():
                         st.rerun()
 
             with col2:
-                if user_role in ["admin", "colaborador"]:
+                if user_role in ["admin", "colaborador", "encarregado"]:
                     if st.button("📂 Documentos"):
                         st.session_state.page = "documentos"
                         st.rerun()
@@ -85,19 +90,25 @@ def main():
                 if st.button("🚪 Sair"):
                     logout()
 
-        # Renderizar a página correspondente
+        # ===== Roteamento das páginas =====
         if st.session_state.page == "diario" and st.session_state.role in ["admin", "encarregado"]:
             render_diario_obra_page()
-        elif st.session_state.page == "documentos" and st.session_state.role in ["admin", "colaborador"]:
+
+        elif st.session_state.page == "documentos" and st.session_state.role in ["admin", "colaborador", "encarregado"]:
             render_documentos_colaborador_page()
+
         elif st.session_state.page == "usuarios" and st.session_state.role == "admin":
             render_user_management_page()
+
         elif st.session_state.page == "backup" and st.session_state.role == "admin":
             render_backup_page()
+
         elif st.session_state.page == "inspecionar" and st.session_state.role == "admin":
             render_inspecionar_banco_page()
+
         elif st.session_state.page == "admin" and st.session_state.role == "admin":
             render_admin_page()
+
         elif st.session_state.page == "alterar_senha":
             render_password_change_page()
 

@@ -1,26 +1,35 @@
 import io
 import os
+import json
+import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
-import streamlit as st
 
 # ===== CONFIGURAÇÕES =====
-DRIVE_FOLDER_ID = 'SEU_ID_DA_PASTA_NO_DRIVE'  # Substitua pelo ID da pasta onde está o users.db
-USERS_DB_FILE_ID = 'SEU_ID_DO_ARQUIVO_USERS_DB'  # Substitua pelo ID atual do users.db no Drive
-CREDENTIALS_FILE = 'credentials.json'  # Seu arquivo de credenciais da conta de serviço
+DRIVE_FOLDER_ID = 'SEU_ID_DA_PASTA_NO_DRIVE'  # (Opcional se for criar novos arquivos futuramente)
+USERS_DB_FILE_ID = 'SEU_ID_DO_ARQUIVO_USERS_DB'  # Substitua aqui pelo ID do arquivo users.db no seu Google Drive
 
 def get_drive_service():
-    creds = service_account.Credentials.from_service_account_file(
-        CREDENTIALS_FILE,
-        scopes=['https://www.googleapis.com/auth/drive']
-    )
-    return build('drive', 'v3', credentials=creds)
+    try:
+        # Carrega o JSON da conta de serviço a partir dos Secrets do Streamlit
+        service_account_info = json.loads(st.secrets["gcp_service_account"])
+        creds = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=["https://www.googleapis.com/auth/drive"]
+        )
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f"❌ Erro ao autenticar no Google Drive: {e}")
+        st.error(f"Erro ao conectar ao Google Drive: {e}")
+        return None
 
 def download_users_db_from_drive():
     """Baixa o arquivo users.db do Google Drive"""
     try:
         service = get_drive_service()
+        if service is None:
+            return
         request = service.files().get_media(fileId=USERS_DB_FILE_ID)
         fh = io.FileIO('users.db', 'wb')
         downloader = MediaIoBaseDownload(fh, request)
@@ -32,11 +41,14 @@ def download_users_db_from_drive():
         print("✅ users.db baixado com sucesso do Google Drive.")
     except Exception as e:
         print(f"❌ Erro ao baixar users.db: {e}")
+        st.error(f"Erro ao baixar users.db: {e}")
 
 def upload_users_db_to_drive():
     """Faz o upload do arquivo users.db para o Google Drive (sobrescrevendo o existente)"""
     try:
         service = get_drive_service()
+        if service is None:
+            return
         media = MediaFileUpload('users.db', mimetype='application/x-sqlite3')
 
         updated_file = service.files().update(

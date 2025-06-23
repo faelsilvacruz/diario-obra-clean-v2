@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 # ===== CONFIGURAÇÕES =====
-USERS_DB_FILE_ID = '1_VOW-WwwO6UyM9iDvpj5MmCwUgb6wJ8Q'  # ID real do seu arquivo users.db no Google Drive
+USERS_DB_FILE_ID = '1x9rFUCZLTZnCdAwgNGeq1QNTcmBFsuXd'  # ID real do seu arquivo users.db no Google Drive
 
 def get_drive_service():
     try:

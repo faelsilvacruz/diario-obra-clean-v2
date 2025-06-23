@@ -1,18 +1,17 @@
 import io
-import json
 import streamlit as st
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 # ===== CONFIGURAÇÕES =====
-DRIVE_FOLDER_ID = 'SEU_ID_DA_PASTA_NO_DRIVE'  # Opcional, só se quiser criar novos arquivos no futuro
-USERS_DB_FILE_ID = 'SEU_ID_DO_ARQUIVO_USERS_DB'  # Substitua pelo ID real do arquivo users.db no seu Drive
+DRIVE_FOLDER_ID = 'SEU_ID_DA_PASTA_NO_DRIVE'  # Opcional
+USERS_DB_FILE_ID = 'SEU_ID_DO_ARQUIVO_USERS_DB'  # Substitua pelo ID real do arquivo users.db no Drive
 
 def get_drive_service():
     try:
-        # Lendo as credenciais diretamente dos secrets (seção [google_service_account])
-        service_account_info = json.loads(st.secrets["google_service_account"])
+        # Pega diretamente o dicionário do secrets, sem precisar de json.loads
+        service_account_info = st.secrets["google_service_account"]
         creds = service_account.Credentials.from_service_account_info(
             service_account_info,
             scopes=["https://www.googleapis.com/auth/drive"]

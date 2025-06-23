@@ -3,12 +3,12 @@ import streamlit as st
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
-# ======= Config Google Drive API =======
+# ======= Configuração Google Drive API =======
 SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = os.path.join('credenciais', 'drive_credentials.json')  # Ajuste o nome se for diferente
+SERVICE_ACCOUNT_FILE = os.path.join('credenciais', 'drive_credentials.json')  # Ajuste o caminho se necessário
 
 def listar_arquivos_por_usuario(tipo_documento, username):
-    pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # Substitua pelo ID real da pasta "documentos" no Drive
+    pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # ID da pasta 'documentos' no Google Drive
     tipo_para_subpasta = {
         'Holerite': 'holerite',
         'Férias': 'ferias',
@@ -26,7 +26,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
     )
     service = build('drive', 'v3', credentials=creds)
 
-    # Busca a pasta do colaborador
+    # Buscar pasta do usuário
     query_pasta_usuario = f"'{pasta_principal_id}' in parents and name = '{username}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     resultado_pasta = service.files().list(q=query_pasta_usuario, fields="files(id, name)").execute()
     pastas_usuario = resultado_pasta.get('files', [])
@@ -36,7 +36,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     pasta_usuario_id = pastas_usuario[0]['id']
 
-    # Busca a subpasta (ex: holerite)
+    # Buscar subpasta (tipo de documento)
     query_subpasta = f"'{pasta_usuario_id}' in parents and name = '{subpasta}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     resultado_subpasta = service.files().list(q=query_subpasta, fields="files(id, name)").execute()
     subpastas = resultado_subpasta.get('files', [])
@@ -46,7 +46,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta_id = subpastas[0]['id']
 
-    # Lista os arquivos dentro da subpasta
+    # Listar arquivos dentro da subpasta
     query_arquivos = f"'{subpasta_id}' in parents and trashed = false"
     resultado_arquivos = service.files().list(q=query_arquivos, fields="files(id, name, webViewLink)").execute()
     return resultado_arquivos.get('files', [])

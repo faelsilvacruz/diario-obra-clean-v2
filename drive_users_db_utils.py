@@ -5,12 +5,11 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 # ===== CONFIGURAÇÕES =====
-DRIVE_FOLDER_ID = 'SEU_ID_DA_PASTA_NO_DRIVE'  # Opcional
-USERS_DB_FILE_ID = 'SEU_ID_DO_ARQUIVO_USERS_DB'  # Substitua pelo ID real do arquivo users.db no Drive
+USERS_DB_FILE_ID = '1_VOW-WwwO6UyM9iDvpj5MmCwUgb6wJ8Q'  # ID real do seu arquivo users.db no Google Drive
 
 def get_drive_service():
     try:
-        # Pega diretamente o dicionário do secrets, sem precisar de json.loads
+        # Lendo as credenciais diretamente dos secrets (seção [google_service_account])
         service_account_info = st.secrets["google_service_account"]
         creds = service_account.Credentials.from_service_account_info(
             service_account_info,

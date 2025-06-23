@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from datetime import datetime
 from pathlib import Path
-from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email
+from pdf_drive_utils import gerar_pdf, processar_fotos, enviar_email, upload_pdf_to_drive
 from db_utils import get_obras
 
 def render_diario_obra_page():
@@ -18,15 +18,12 @@ def render_diario_obra_page():
             st.error(f"Erro ao ler o arquivo '{nome_arquivo}': {e}")
             return pd.DataFrame()
 
-    # ==== Obras direto do banco ====
     obras_do_banco = get_obras()
     obras_lista = [""] + [obra[1] for obra in obras_do_banco] + ["❗ Obra não encontrada? Fale com o Administrativo"]
 
-    # ==== Contratos (temporariamente ainda via CSV) ====
     contratos_df = carregar_arquivo_csv("contratos.csv")
     contratos_lista = [""] + contratos_df["Nome"].tolist() if not contratos_df.empty else []
 
-    # ==== Colaboradores ====
     colab_df = pd.DataFrame()
     colaboradores_lista = []
     try:
@@ -44,7 +41,6 @@ def render_diario_obra_page():
         st.error("Erro: Contratos não encontrados. Verifique o arquivo 'contratos.csv'.")
         st.stop()
 
-    # ==== Formulário ====
     st.title("Relatório Diário de Obra - RDV Engenharia")
 
     obra = st.selectbox("Obra", obras_lista)
@@ -142,6 +138,13 @@ Número/Código da APR: {numero_apr}"""
         )
 
         nome_pdf = f"Diario_{obra.replace(' ', '_')}_{data.strftime('%Y-%m-%d')}.pdf"
+
+        # ===== Salvar PDF localmente para o upload =====
+        with open(nome_pdf, "wb") as f:
+            f.write(pdf_buffer.getbuffer())
+
+        # ===== Upload automático para o Google Drive =====
+        upload_pdf_to_drive(nome_pdf, nome_pdf)
 
         st.download_button(
             label="📥 Baixar Relatório PDF",

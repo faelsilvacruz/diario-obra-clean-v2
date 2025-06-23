@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import shutil
+from drive_users_db_utils import upload_users_db_to_drive
 
 def listar_usuarios():
     try:
@@ -54,3 +55,29 @@ def render_backup_page():
         st.dataframe(usuarios_df)
     else:
         st.info("Nenhum usuário encontrado no banco atual.")
+
+    st.markdown("---")
+
+    # ====== Upload para o Google Drive ======
+    st.subheader("📤 Atualizar Banco de Usuários no Google Drive")
+
+    # Estilo customizado do botão
+    button_style = """
+        <style>
+        div.stButton > button {
+            background-color: #0F2A4D;
+            color: white;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        div.stButton > button:hover {
+            background-color: #15406E;
+            color: #ffffff;
+        }
+        </style>
+    """
+    st.markdown(button_style, unsafe_allow_html=True)
+
+    if st.button("🔼 Fazer Upload do Banco Atual"):
+        upload_users_db_to_drive()

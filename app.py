@@ -41,54 +41,63 @@ def main():
             col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
             st.write("---")
 
+            # Controle de acesso por perfil
+            user_role = st.session_state.get("role", "")
+
             with col1:
-                if st.button("📓 Diário"):
-                    st.session_state.page = "diario"
-                    st.rerun()
+                if user_role in ["admin", "encarregado"]:
+                    if st.button("📓 Diário"):
+                        st.session_state.page = "diario"
+                        st.rerun()
 
             with col2:
-                if st.button("📂 Documentos"):
-                    st.session_state.page = "documentos"
-                    st.rerun()
+                if user_role in ["admin", "colaborador"]:
+                    if st.button("📂 Documentos"):
+                        st.session_state.page = "documentos"
+                        st.rerun()
 
             with col3:
-                if st.button("👥 Usuários"):
-                    st.session_state.page = "usuarios"
-                    st.session_state.user_aba = "Listar Usuários"
-                    st.rerun()
+                if user_role == "admin":
+                    if st.button("👥 Usuários"):
+                        st.session_state.page = "usuarios"
+                        st.session_state.user_aba = "Listar Usuários"
+                        st.rerun()
 
             with col4:
-                if st.button("💾 Backup"):
-                    st.session_state.page = "backup"
-                    st.rerun()
+                if user_role == "admin":
+                    if st.button("💾 Backup"):
+                        st.session_state.page = "backup"
+                        st.rerun()
 
             with col5:
-                if st.button("🔎 Inspecionar"):
-                    st.session_state.page = "inspecionar"
-                    st.rerun()
+                if user_role == "admin":
+                    if st.button("🔎 Inspecionar"):
+                        st.session_state.page = "inspecionar"
+                        st.rerun()
 
             with col6:
-                if st.button("⚙️ Administração"):
-                    st.session_state.page = "admin"
-                    st.rerun()
+                if user_role == "admin":
+                    if st.button("⚙️ Administração"):
+                        st.session_state.page = "admin"
+                        st.rerun()
 
             with col7:
                 if st.button("🚪 Sair"):
                     logout()
 
         # Renderizar a página correspondente
-        if st.session_state.page == "diario":
+        if st.session_state.page == "diario" and st.session_state.role in ["admin", "encarregado"]:
             render_diario_obra_page()
-        elif st.session_state.page == "documentos":
+        elif st.session_state.page == "documentos" and st.session_state.role in ["admin", "colaborador"]:
             render_documentos_colaborador_page()
-        elif st.session_state.page == "usuarios":
+        elif st.session_state.page == "usuarios" and st.session_state.role == "admin":
             render_user_management_page()
-        elif st.session_state.page == "backup":
+        elif st.session_state.page == "backup" and st.session_state.role == "admin":
             render_backup_page()
-        elif st.session_state.page == "inspecionar":
+        elif st.session_state.page == "inspecionar" and st.session_state.role == "admin":
             render_inspecionar_banco_page()
-        elif st.session_state.page == "admin":
-            render_admin_page()  # <<< Aqui chama a página de administração
+        elif st.session_state.page == "admin" and st.session_state.role == "admin":
+            render_admin_page()
         elif st.session_state.page == "alterar_senha":
             render_password_change_page()
 

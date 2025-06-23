@@ -274,3 +274,46 @@ def enviar_email(destinatarios, assunto, corpo_html, pdf_buffer=None, nome_pdf=N
     except Exception as e:
         print(f"Erro ao enviar e-mail: {e}")
         return False
+# ===========================
+# Funções de integração com Google Drive
+# ===========================
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2 import service_account
+
+DIARIO_OBRA_FOLDER_ID = '1BUgZRcBrKksC3eUytoJ5mv_nhMRdAv1d'  # ID da pasta "DIÁRIO OBRA APP"
+
+def get_drive_service():
+    try:
+        service_account_info = st.secrets["google_service_account"]
+        creds = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=["https://www.googleapis.com/auth/drive"]
+        )
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f"❌ Erro ao autenticar no Google Drive: {e}")
+        st.error(f"Erro ao conectar ao Google Drive: {e}")
+        return None
+
+def upload_pdf_to_drive(file_path, file_name):
+    """Faz upload automático de um PDF de Diário de Obra para o Google Drive"""
+    try:
+        service = get_drive_service()
+        if service is None:
+            return
+        file_metadata = {
+            'name': file_name,
+            'parents': [DIARIO_OBRA_FOLDER_ID]
+        }
+        media = MediaFileUpload(file_path, mimetype='application/pdf')
+        file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
+        print(f"✅ PDF '{file_name}' enviado com sucesso ao Google Drive (ID: {file.get('id')})")
+        st.success(f"✅ PDF '{file_name}' enviado para o Google Drive!")
+    except Exception as e:
+        print(f"❌ Erro ao fazer upload do PDF: {e}")
+        st.error(f"❌ Erro ao enviar PDF: {e}")

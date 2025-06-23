@@ -1,4 +1,3 @@
-
 import os
 import streamlit as st
 from googleapiclient.discovery import build
@@ -9,7 +8,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = os.path.join('credenciais', 'drive_credentials.json')  # Ajuste o nome se for diferente
 
 def listar_arquivos_por_usuario(tipo_documento, username):
-    pasta_principal_id = 'ID_DA_PASTA_DOCUMENTOS'  # Substitua pelo ID real da pasta "documentos" no Drive
+    pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # Substitua pelo ID real da pasta "documentos" no Drive
     tipo_para_subpasta = {
         'Holerite': 'holerite',
         'Férias': 'ferias',

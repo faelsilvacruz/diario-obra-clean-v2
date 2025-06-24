@@ -7,7 +7,6 @@ from backup_page import render_backup_page
 from inspecionar_banco_page import render_inspecionar_banco_page
 from admin_page import render_admin_page
 from drive_users_db_utils import download_users_db_from_drive
-from layout_documentos_rdv import render_novo_layout_documentos  # Import do layout de teste
 
 def logout():
     for key in list(st.session_state.keys()):

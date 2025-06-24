@@ -76,13 +76,20 @@ def render_documentos_colaborador_page():
     </style>
     """, unsafe_allow_html=True)
 
+    from pytz import timezone
+
     with st.sidebar:
         opcao = st.radio(
             "Selecione o tipo de documento:",
             ["Holerite", "Férias", "Informe de Rendimentos", "Documentos Pessoais"]
         )
+    
         st.markdown(f"👤 Usuário: **{st.session_state.get('username', 'não identificado')}**")
-        st.markdown(f"📅 {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    
+        fuso_brasilia = timezone('America/Sao_Paulo')
+        hora_local = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M')
+        st.markdown(f"📅 {hora_local}")
+
 
     termo_busca = st.text_input("🔎 Buscar por nome do documento:")
 

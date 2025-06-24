@@ -16,7 +16,32 @@ def listar_usuarios():
 def render_backup_page():
     st.title("📥 Backup e Restauração do Banco de Usuários")
 
-    # ====== Download do Banco ======
+    # ===== Estilo visual só para esta página =====
+    st.markdown("""
+        <style>
+        .backup-section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .stButton>button {
+            background-color: #0F2A4D;
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: bold;
+            border: none;
+        }
+        .stButton>button:hover {
+            background-color: #15406E;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # ====== Seção: Download do Banco ======
+    st.markdown("<div class='backup-section'>", unsafe_allow_html=True)
     st.subheader("📥 Fazer Download do Banco Atual")
     try:
         with open("users.db", "rb") as file:
@@ -28,10 +53,10 @@ def render_backup_page():
             )
     except FileNotFoundError:
         st.error("Arquivo users.db não encontrado.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    # ====== Upload / Restauração ======
+    # ====== Seção: Upload / Restauração ======
+    st.markdown("<div class='backup-section'>", unsafe_allow_html=True)
     st.subheader("📤 Restaurar Banco de Usuários")
     uploaded_file = st.file_uploader("Selecione um arquivo `.db` para upload e restauração", type=["db"])
 
@@ -44,40 +69,21 @@ def render_backup_page():
                 st.info("Dica: Reinicie o app após restaurar.")
             except Exception as e:
                 st.error(f"Erro ao restaurar banco: {e}")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    # ====== Lista de Usuários ======
+    # ====== Seção: Lista de Usuários ======
+    st.markdown("<div class='backup-section'>", unsafe_allow_html=True)
     st.subheader("👥 Usuários Cadastrados Atualmente")
-
     usuarios_df = listar_usuarios()
     if usuarios_df is not None and not usuarios_df.empty:
         st.dataframe(usuarios_df)
     else:
         st.info("Nenhum usuário encontrado no banco atual.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    # ====== Upload para o Google Drive ======
+    # ====== Seção: Upload para o Google Drive ======
+    st.markdown("<div class='backup-section'>", unsafe_allow_html=True)
     st.subheader("📤 Atualizar Banco de Usuários no Google Drive")
-
-    # Estilo customizado do botão
-    button_style = """
-        <style>
-        div.stButton > button {
-            background-color: #0F2A4D;
-            color: white;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: bold;
-        }
-        div.stButton > button:hover {
-            background-color: #15406E;
-            color: #ffffff;
-        }
-        </style>
-    """
-    st.markdown(button_style, unsafe_allow_html=True)
-
     if st.button("🔼 Fazer Upload do Banco Atual"):
         upload_users_db_to_drive()
+    st.markdown("</div>", unsafe_allow_html=True)

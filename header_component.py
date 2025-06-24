@@ -21,8 +21,8 @@ def render_header():
             margin: 0 !important;
         }}
 
+        /* Header container ocupando o topo */
         .custom-header {{
-            position: relative;
             width: 100%;
             height: 140px;
             background-color: #0F2A4D;
@@ -30,19 +30,24 @@ def render_header():
             justify-content: center;
             align-items: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
         }}
 
+        /* Logo centralizada */
         .custom-header img {{
             height: 100px;
             object-fit: contain;
         }}
 
+        /* Botão Sair no canto direito da faixa */
         .logout-button-container {{
             position: absolute;
             right: 30px;
             top: 30px;
         }}
 
+        /* Estilo visual do botão Sair */
         .stButton>button {{
             background-color: white;
             color: #0F2A4D;
@@ -50,6 +55,7 @@ def render_header():
             padding: 8px 16px;
             font-weight: 600;
             border: none;
+            cursor: pointer;
         }}
 
         .stButton>button:hover {{
@@ -60,12 +66,12 @@ def render_header():
         <div class="custom-header">
             <img src="data:image/png;base64,{logo_base64}">
             <div class="logout-button-container">
-                <!-- O botão real será renderizado pelo Streamlit abaixo -->
+                <!-- O botão real vem abaixo via Streamlit -->
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Posiciona o botão Sair dentro da div "logout-button-container"
+    # Posiciona o botão Sair fisicamente fora da faixa, mas visualmente dentro (usando colunas invisíveis)
     col1, col2, col3 = st.columns([8, 2, 1])
     with col3:
         if st.button("🚪 Sair", key="header_logout"):

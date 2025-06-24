@@ -4,6 +4,11 @@ import re
 from drive_utils import listar_arquivos_por_usuario
 from pytz import timezone
 
+def formatar_nome_arquivo(nome_arquivo):
+    nome_sem_extensao = nome_arquivo.replace(".pdf", "")
+    nome_formatado = nome_sem_extensao.replace("_", " ")
+    return nome_formatado
+
 def extrair_mes_ano(nome_arquivo):
     padrao = r'Holerite_([A-Za-zç]+)_(\d{4})\.pdf'
     match = re.search(padrao, nome_arquivo, re.IGNORECASE)
@@ -77,20 +82,17 @@ def render_documentos_colaborador_page():
     </style>
     """, unsafe_allow_html=True)
 
-    from pytz import timezone
-
     with st.sidebar:
         opcao = st.radio(
             "Selecione o tipo de documento:",
             ["Holerite", "Férias", "Informe de Rendimentos", "Documentos Pessoais"]
         )
-    
+
         st.markdown(f"👤 Usuário: **{st.session_state.get('username', 'não identificado')}**")
-    
+
         fuso_brasilia = timezone('America/Sao_Paulo')
         hora_local = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M')
         st.markdown(f"📅 {hora_local}")
-
 
     termo_busca = st.text_input("🔎 Buscar por nome do documento:")
 
@@ -104,7 +106,7 @@ def render_documentos_colaborador_page():
 
     if termo_busca:
         arquivos = [a for a in arquivos if termo_busca.lower() in a['name'].lower()]
-        
+
     if opcao == "Holerite":
         arquivos = ordenar_holerites(arquivos)
     else:
@@ -132,7 +134,7 @@ def render_documentos_colaborador_page():
 
         st.markdown(f"""
         <div class="document-card">
-            <div class="document-name">📄 {nome_doc}</div>
+            <div class="document-name">📄 {formatar_nome_arquivo(nome_doc)}</div>
             <div style='font-size: 0.85rem; color: #555;'>
                 📅 {ultima_mod} | 📦 {tamanho_mb} MB
             </div>

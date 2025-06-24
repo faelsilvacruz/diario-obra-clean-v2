@@ -98,7 +98,7 @@ def render_login_page():
 
     # ✅ Exibir logo centralizada no final da página de login
     try:
-        logo = Image.open("LOGO_RDV_AZUL.png")
+        logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")
         st.markdown("<br><div style='text-align: center;'>", unsafe_allow_html=True)
         st.image(logo, use_container_width=False, width=200)
         st.markdown("</div>", unsafe_allow_html=True)

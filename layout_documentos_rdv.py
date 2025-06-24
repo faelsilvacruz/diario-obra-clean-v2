@@ -29,6 +29,9 @@ def render_novo_layout_documentos():
             margin-bottom: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
+        .block-container .stContainer {
+            padding: 0px !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -56,14 +59,13 @@ def render_novo_layout_documentos():
     ]
 
     for doc in docs:
-        with st.container():
-            st.markdown('<div class="document-card">', unsafe_allow_html=True)
-            with st.expander(f"📄 {doc['nome']}"):
-                st.markdown(f"📅 **Data:** {doc['data']}  \n📦 **Tamanho:** {doc['tamanho']}")
-                st.download_button(
-                    label="📥 Baixar Documento",
-                    data="",  # Depois, insira os bytes reais do arquivo
-                    file_name=doc['nome'],
-                    key=doc['nome']
-                )
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="document-card">', unsafe_allow_html=True)
+        with st.expander(f"📄 {doc['nome']}"):
+            st.markdown(f"📅 **Data:** {doc['data']}  \n📦 **Tamanho:** {doc['tamanho']}")
+            st.download_button(
+                label="📥 Baixar Documento",
+                data="",  # Coloque os bytes reais aqui depois
+                file_name=doc['nome'],
+                key=doc['nome']
+            )
+        st.markdown('</div>', unsafe_allow_html=True)

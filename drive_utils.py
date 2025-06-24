@@ -34,7 +34,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
     if service is None:
         return []
 
-    # Buscar pasta do usuário
+    # Buscar a pasta do usuário
     query_pasta_usuario = (
         f"'{pasta_principal_id}' in parents and name = '{username}' "
         f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -47,7 +47,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     pasta_usuario_id = pastas_usuario[0]['id']
 
-    # Buscar subpasta do tipo
+    # Buscar a subpasta (tipo de documento)
     query_subpasta = (
         f"'{pasta_usuario_id}' in parents and name = '{subpasta}' "
         f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -60,7 +60,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta_id = subpastas[0]['id']
 
-    # Listar os arquivos dentro da subpasta
+    # Listar os arquivos dentro da subpasta com os campos completos
     query_arquivos = f"'{subpasta_id}' in parents and trashed = false"
     resultado_arquivos = service.files().list(
         q=query_arquivos,

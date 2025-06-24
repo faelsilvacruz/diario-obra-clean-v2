@@ -1,6 +1,7 @@
 import streamlit as st
 import sqlite3
 import hashlib
+from drive_users_db_utils import upload_users_db_to_drive  # Import do upload automático
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -109,6 +110,10 @@ def render_password_change_page():
             c.execute("UPDATE userstable SET password=?, senha_alterada=1 WHERE username=?", (hashed_pswd, st.session_state.username))
             conn.commit()
             conn.close()
+
+            # ✅ Upload automático para o Google Drive
+            upload_users_db_to_drive()
+
             st.success("Senha alterada com sucesso! Redirecionando...")
             st.session_state.page = "documentos"
             st.rerun()

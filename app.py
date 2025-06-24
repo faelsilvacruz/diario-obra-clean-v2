@@ -13,7 +13,10 @@ def logout():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
-
+def load_custom_css(file_path):
+    with open(file_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+        
 def main():
     st.set_page_config(
         page_title="App RDV Engenharia",
@@ -25,17 +28,7 @@ def main():
     download_users_db_from_drive()
 
     # ===== Estilo visual do app =====
-    st.markdown("""
-        <style>
-        .main {
-            background-color: #0E1A2B;
-        }
-        .block-container {
-            color: white;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
+    
     # ===== Login =====
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()

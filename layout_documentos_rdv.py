@@ -13,16 +13,16 @@ def render_novo_layout_documentos():
     st.markdown("""
     <style>
     .stExpander {
-        background-color: #262626 !important;
+        background-color: #1a2639 !important;
         color: white !important;
-        border: 1px solid #3c3c3c !important;
+        border: 1px solid #2e3e55 !important;
         border-radius: 8px !important;
-        padding: 10px !important;
-        margin-bottom: 10px !important;
+        padding: 12px !important;
+        margin-bottom: 12px !important;
     }
     
     .stExpander > summary {
-        background: linear-gradient(90deg, #0F2A4D 0%, #224C7B 100%) !important;
+        background-color: #224C7B !important;
         color: white !important;
         border-radius: 8px !important;
         padding: 10px;
@@ -32,11 +32,11 @@ def render_novo_layout_documentos():
     
     .stExpander div {
         font-size: 1rem;
-        line-height: 1.5;
+        line-height: 1.6;
     }
     
     .stDownloadButton > button {
-        background-color: #0F2A4D !important;
+        background-color: #224C7B !important;
         color: white !important;
         border-radius: 5px;
         padding: 8px 16px;
@@ -44,11 +44,10 @@ def render_novo_layout_documentos():
     }
     
     .stDownloadButton > button:hover {
-        background-color: #1c3a6d !important;
+        background-color: #2f64a7 !important;
     }
     </style>
     """, unsafe_allow_html=True)
-
 
     # ===== SIDEBAR =====
     with st.sidebar:

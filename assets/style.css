@@ -1,0 +1,53 @@
+/* === Layout Geral === */
+.stApp {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Arial', sans-serif;
+}
+
+/* === Botões primários (exemplo: "Documentos", "Sair") === */
+button[kind="primary"] {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: bold;
+    padding: 8px 16px;
+}
+
+button[kind="primary"]:hover {
+    background-color: #14406d !important;
+    color: white !important;
+}
+
+/* === Botões secundários (se tiver) === */
+button[kind="secondary"] {
+    background-color: #F5F5F5 !important;
+    color: #0F2A4D !important;
+    border-radius: 8px;
+    font-weight: bold;
+    padding: 8px 16px;
+}
+
+button[kind="secondary"]:hover {
+    background-color: #D9D9D9 !important;
+    color: #0F2A4D !important;
+}
+
+/* === Containers / Caixas === */
+.stContainer {
+    background-color: #F5F5F5 !important;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* === Títulos === */
+h1, h2, h3 {
+    color: #0F2A4D !important;
+}
+
+/* === Links === */
+a {
+    color: #0F2A4D !important;
+    font-weight: bold;
+}

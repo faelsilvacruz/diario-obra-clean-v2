@@ -2,67 +2,50 @@ import streamlit as st
 from datetime import datetime
 from pytz import timezone
 
-def limpar_nome_documento(nome_arquivo):
-    nome_sem_ext = nome_arquivo.replace('.pdf', '')
-    nome_espacado = nome_sem_ext.replace('_', ' ')
-    return nome_espacado
+def render_documentos_page():
+    # Configuração da página com layout wide para melhor aproveitamento de espaço
+    st.set_page_config(
+        layout="wide",
+        page_title="Central de Documentos - RDV Engenharia",
+        page_icon="📂"
+    )
 
-def render_novo_layout_documentos():
-    st.set_page_config(layout="centered", page_title="Central de Documentos - RDV Engenharia", page_icon="📂")
-
-    st.markdown(""" 
+    # CSS personalizado que realmente funciona
+    st.markdown("""
     <style>
-        /* Estilos gerais */
+        /* Remove todos os espaçamentos padrão indesejados */
+        .stApp {
+            padding-top: 1rem;
+        }
+        
+        /* Estilo dos cards de documento */
         .document-card {
             background-color: #f8f9fa;
             border-radius: 8px;
-            margin-bottom: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0F2A4D;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-        }
-        .document-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        /* Estilos do botão */
-        .stDownloadButton>button {
-            background-color: #0F2A4D !important;
-            color: white !important;
-            border-radius: 6px !important;
-            padding: 8px 16px !important;
-            border: none !important;
-            font-size: 14px !important;
-        }
-        .stDownloadButton>button:hover {
-            background-color: #163A5C !important;
-            transform: translateY(-1px);
-        }
-        
-        /* Estilos do expander - SOLUÇÃO PARA BARRA BRANCA */
-        .stExpander > div {
-            background-color: transparent !important;
-            border: none !important;
-        }
-        .stExpander > div > div {
+        /* Remove o espaçamento dos containers */
+        .stContainer {
             padding: 0 !important;
         }
-        .stExpander > label {
-            background-color: #f8f9fa !important;
-            padding: 12px 15px !important;
+        
+        /* Estilo do botão de download */
+        .stDownloadButton button {
+            background-color: #0F2A4D !important;
+            color: white !important;
+            border: none !important;
             border-radius: 6px !important;
-            margin-bottom: 0 !important;
-        }
-        .stExpander > label:hover {
-            background-color: #e9ecef !important;
-        }
-        .stExpander > label:focus-within {
-            box-shadow: none !important;
+            padding: 8px 16px !important;
+            margin-top: 10px !important;
         }
         
-        /* Remove espaçamentos indesejados */
-        .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
+        /* Remove a borda azul de foco */
+        .stDownloadButton button:focus {
+            box-shadow: none !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -70,6 +53,7 @@ def render_novo_layout_documentos():
     # Sidebar
     with st.sidebar:
         st.title("📂 Navegação")
+        
         doc_type = st.radio(
             "Tipo de Documento:",
             ["Holerite", "Férias", "Informe de Rendimentos", "Documentos Pessoais"]
@@ -84,32 +68,50 @@ def render_novo_layout_documentos():
 
     # Conteúdo principal
     st.title(f"📑 Documentos - {doc_type}")
-    
-    docs = [
-        {"nome": "Holerite_Maio_2025.pdf", "data": "20/05/2025", "tamanho": "0.08 MB"},
-        {"nome": "Holerite_Abril_2025.pdf", "data": "15/04/2025", "tamanho": "0.08 MB"},
-        {"nome": "Holerite_Março_2025.pdf", "data": "20/03/2025", "tamanho": "0.08 MB"}
+
+    # Dados dos documentos (substitua pelos seus dados reais)
+    documentos = [
+        {
+            "nome": "Holerite_Maio_2025.pdf",
+            "nome_exibicao": "Holerite Maio 2025",
+            "data": "20/05/2025",
+            "tamanho": "0.08 MB"
+        },
+        {
+            "nome": "Holerite_Abril_2025.pdf",
+            "nome_exibicao": "Holerite Abril 2025",
+            "data": "15/04/2025",
+            "tamanho": "0.08 MB"
+        },
+        {
+            "nome": "Holerite_Março_2025.pdf",
+            "nome_exibicao": "Holerite Março 2025",
+            "data": "20/03/2025",
+            "tamanho": "0.08 MB"
+        }
     ]
 
-    for doc in docs:
+    # Exibição dos documentos
+    for doc in documentos:
         with st.container():
-            st.markdown('<div class="document-card">', unsafe_allow_html=True)
+            # Usando markdown para criar um card personalizado
+            st.markdown(f"""
+            <div class="document-card">
+                <h4>{doc['nome_exibicao']}</h4>
+                <p><strong>Data:</strong> {doc['data']}</p>
+                <p><strong>Tamanho:</strong> {doc['tamanho']}</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            with st.expander(f"📄 {limpar_nome_documento(doc['nome'])}", expanded=False):
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    st.markdown(f"**📅 Data:** {doc['data']}")
-                with col2:
-                    st.markdown(f"**📦 Tamanho:** {doc['tamanho']}")
-                
-                st.download_button(
-                    label="📥 Baixar Documento",
-                    data="",  # Substitua pelos bytes do arquivo
-                    file_name=doc['nome'],
-                    key=f"download_{doc['nome']}"
-                )
+            # Botão de download alinhado com o card
+            st.download_button(
+                label="Baixar Documento",
+                data="",  # Substitua pelos bytes do arquivo real
+                file_name=doc['nome'],
+                key=f"download_{doc['nome']}"
+            )
             
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("---")  # Linha divisória entre documentos
 
 if __name__ == "__main__":
-    render_novo_layout_documentos()
+    render_documentos_page()

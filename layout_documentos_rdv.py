@@ -10,7 +10,7 @@ def limpar_nome_documento(nome_arquivo):
 def render_novo_layout_documentos():
     st.set_page_config(layout="centered", page_title="Central de Documentos - RDV Engenharia", page_icon="📂")
 
-    st.markdown("""
+    st.markdown(""" 
     <style>
         .stDownloadButton>button {
             background-color: #0F2A4D;
@@ -30,11 +30,14 @@ def render_novo_layout_documentos():
             margin-bottom: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
+        .stExpander {
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+        }
         .block-container .stContainer {
             padding-top: 0px !important;
-        }
-        .stExpander {
-            margin: 0px !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -64,11 +67,10 @@ def render_novo_layout_documentos():
     for doc in docs:
         st.markdown('<div class="document-card">', unsafe_allow_html=True)
         with st.expander(f"📄 {limpar_nome_documento(doc['nome'])}"):
-            st.markdown(f"📅 **Data:** {doc['data']}  
-📦 **Tamanho:** {doc['tamanho']}")
+            st.markdown(f"📅 **Data:** {doc['data']}  \n📦 **Tamanho:** {doc['tamanho']}")
             st.download_button(
                 label="📥 Baixar Documento",
-                data="",  # Coloque os bytes reais do arquivo aqui
+                data="",  # Dados reais do PDF
                 file_name=doc['nome'],
                 key=doc['nome']
             )

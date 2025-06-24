@@ -96,7 +96,8 @@ def render_documentos_colaborador_page():
 
     if termo_busca:
         arquivos = [a for a in arquivos if termo_busca.lower() in a['name'].lower()]
-        if opcao == "Holerite":
+        
+    if opcao == "Holerite":
         arquivos = ordenar_holerites(arquivos)
     else:
         def parse_created(arquivo):

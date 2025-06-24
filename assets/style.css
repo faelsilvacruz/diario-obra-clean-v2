@@ -5,7 +5,7 @@
     font-family: 'Arial', sans-serif;
 }
 
-/* === Botões Globais (Primários) === */
+/* === Botões Globais (Primários: tipo "Entrar", "Documentos", "Sair") === */
 button {
     background-color: #0F2A4D !important;
     color: white !important;
@@ -15,18 +15,39 @@ button {
     border: none !important;
 }
 
-/* Hover dos botões */
 button:hover {
     background-color: #14406d !important;
     color: white !important;
     border: none !important;
 }
 
-/* === Checkboxes, Radio Buttons, etc === */
-input[type="radio"] + label,
-input[type="checkbox"] + label {
-    color: #0F2A4D !important;
-    font-weight: bold;
+/* === Botões do tipo Submit (ex: forms Streamlit) === */
+.stButton > button {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+}
+
+.stButton > button:hover {
+    background-color: #14406d !important;
+}
+
+/* === Expanders (Accordion) === */
+.st-expanderHeader {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* === Containers / Blocos === */
+.stContainer {
+    background-color: #F5F5F5 !important;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
 }
 
 /* === Títulos === */
@@ -40,36 +61,36 @@ a {
     font-weight: bold;
 }
 
-/* === Containers / Blocos / Accordion === */
-.stContainer {
-    background-color: #F5F5F5 !important;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-/* === Accordion Expanders === */
-.st-expanderHeader {
-    background-color: #0F2A4D !important;
-    color: white !important;
-    border-radius: 6px;
-    padding: 8px;
-}
-
-/* === Corrigindo textos dentro de botões Streamlit forms e submit === */
-.stButton > button {
-    background-color: #0F2A4D !important;
-    color: white !important;
+/* === Inputs: Campos de texto e senha === */
+input, textarea {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
     font-weight: bold !important;
-    border-radius: 8px !important;
-    padding: 8px 16px !important;
+    border: 2px solid #0F2A4D !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
 }
 
-.stButton > button:hover {
-    background-color: #14406d !important;
+/* === Placeholder dos Inputs === */
+input::placeholder, textarea::placeholder {
+    color: #555555 !important;
+    font-weight: bold !important;
 }
 
-/* === Radios (Fundo mais visível quando selecionado) === */
+/* === Labels dos campos === */
+label {
+    font-weight: bold !important;
+    color: #0F2A4D !important;
+}
+
+/* === Radio Buttons e Checkboxes === */
+input[type="radio"] + label,
+input[type="checkbox"] + label {
+    color: #0F2A4D !important;
+    font-weight: bold;
+}
+
+/* === Radios (cor de fundo nas opções) === */
 .stRadio > div > label {
     background-color: #F5F5F5 !important;
     border-radius: 5px;

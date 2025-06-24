@@ -19,19 +19,21 @@ def render_header():
         .custom-header {{
             width: 100%;
             background-color: #0F2A4D;
-            padding: 10px 30px;
+            padding: 16px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }}
-        .custom-header img {{
+        .logo-center {{
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }}
+        .logo-center img {{
             height: 60px;
             object-fit: contain;
-        }}
-        .logout-button-container {{
-            display: flex;
-            align-items: center;
         }}
         .logout-button-container button {{
             background-color: white !important;
@@ -48,7 +50,9 @@ def render_header():
         </style>
 
         <div class="custom-header">
-            <div><img src="data:image/png;base64,{logo_base64}" alt="Logo RDV"></div>
+            <div class="logo-center">
+                <img src="data:image/png;base64,{logo_base64}" alt="Logo RDV">
+            </div>
             <div class="logout-button-container">
                 <form action="?logout" method="post">
                     <button type="submit">🚪 Sair</button>
@@ -57,6 +61,5 @@ def render_header():
         </div>
     """, unsafe_allow_html=True)
 
-    # Detectar clique no botão manualmente
     if st.query_params.get("logout") is not None:
         logout()

@@ -20,20 +20,48 @@ def render_login_page():
     st.markdown("""
         <style>
         .stApp {
-            background-color: #0F2A4D;
+            background-color: #FFFFFF;
+            color: #000000;
         }
+
         .titulo-principal {
             text-align: center;
-            color: white;
+            color: #0F2A4D;
             font-size: 30px;
             margin-top: 40px;
             margin-bottom: 30px;
             font-weight: bold;
         }
-        .login-inputs {
-            max-width: 400px;
-            margin: auto;
-            background: transparent;
+
+        input, textarea {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+            border: 2px solid #0F2A4D !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #555555 !important;
+            font-weight: bold !important;
+        }
+
+        label {
+            font-weight: bold !important;
+            color: #0F2A4D !important;
+        }
+
+        button {
+            background-color: #0F2A4D !important;
+            color: white !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            padding: 8px 16px !important;
+        }
+
+        button:hover {
+            background-color: #14406d !important;
         }
         </style>
     """, unsafe_allow_html=True)

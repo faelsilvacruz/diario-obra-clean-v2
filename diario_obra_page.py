@@ -2,41 +2,70 @@ import streamlit as st
 from header_component import render_header
 from datetime import datetime
 
-def logout():
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
-
 def render_diario_obra_page():
     # ===== Header =====
     render_header()
 
-    # ===== Conteúdo da Página: Diário de Obra =====
-    st.title("📓 Diário de Obra - RDV Engenharia")
-
+    # ===== Estilo Local da Página =====
     st.markdown("""
-    Nesta página você pode registrar as atividades diárias da obra, anexar fotos e gerar um resumo.
+        <style>
+        .diario-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
 
-    ---
-    """)
+        .diario-title {
+            font-size: 1.6rem;
+            color: #0F2A4D;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
 
-    # ===== Seletor de Data =====
+        .stTextArea, .stDateInput, .stFileUploader {
+            margin-bottom: 20px;
+        }
+
+        .stButton>button {
+            background-color: #0F2A4D;
+            color: white;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-weight: 600;
+            border: none;
+        }
+
+        .stButton>button:hover {
+            background-color: #14406d;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # ===== Conteúdo =====
+    st.markdown("<div class='diario-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='diario-title'>📓 Diário de Obra - Registro do Dia</div>", unsafe_allow_html=True)
+
+    # Seletor de Data
     data_diario = st.date_input("Data do Diário:", datetime.today())
 
-    # ===== Campo de Texto: Atividades =====
-    atividades = st.text_area("Descreva as atividades realizadas no dia:")
+    # Campo de Texto: Atividades
+    atividades = st.text_area("Atividades Realizadas:")
 
-    # ===== Campo de Texto: Observações Extras =====
-    observacoes = st.text_area("Observações adicionais (opcional):")
+    # Campo de Texto: Observações
+    observacoes = st.text_area("Observações Adicionais (opcional):")
 
-    # ===== Upload de Fotos =====
-    fotos = st.file_uploader("📸 Anexe fotos da obra (JPG, PNG):", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+    # Upload de Fotos
+    fotos = st.file_uploader("📸 Anexar Fotos da Obra (JPG, PNG):", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
-    # ===== Botão de Salvar =====
+    # Botão Salvar
     if st.button("✅ Salvar Diário de Obra"):
         st.success(f"Diário de Obra de {data_diario.strftime('%d/%m/%Y')} salvo com sucesso!")
 
-        st.markdown("### ✅ Resumo do que foi preenchido:")
+        # Resumo
+        st.markdown("---")
+        st.markdown("### ✅ Resumo do Registro:")
         st.write(f"**Data:** {data_diario.strftime('%d/%m/%Y')}")
         st.write(f"**Atividades:** {atividades}")
 
@@ -44,9 +73,8 @@ def render_diario_obra_page():
             st.write(f"**Observações:** {observacoes}")
 
         if fotos:
-            st.write(f"**Fotos Anexadas:** {len(fotos)}")
+            st.write(f"**Total de fotos anexadas:** {len(fotos)}")
             for i, foto in enumerate(fotos, 1):
                 st.image(foto, caption=f"Foto {i}", width=300)
 
-    st.markdown("---")
-    st.info("👉 Em breve: Exportação em PDF e envio automático por e-mail.")
+    st.markdown("</div>", unsafe_allow_html=True)

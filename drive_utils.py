@@ -18,7 +18,7 @@ def get_drive_service():
         return None
 
 def listar_arquivos_por_usuario(tipo_documento, username):
-    pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # ID da pasta 'documentos' no Google Drive
+    pasta_principal_id = '1gpKHXPdGeSqUbVze5jy40SLGPOXz583Q'  # ID da pasta 'documentos'
     tipo_para_subpasta = {
         'Holerite': 'holerite',
         'Férias': 'ferias',
@@ -34,7 +34,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
     if service is None:
         return []
 
-    # Buscar a pasta do usuário
+    # Buscar pasta do usuário
     query_pasta_usuario = (
         f"'{pasta_principal_id}' in parents and name = '{username}' "
         f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -47,7 +47,7 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     pasta_usuario_id = pastas_usuario[0]['id']
 
-    # Buscar a subpasta (tipo de documento)
+    # Buscar subpasta do tipo
     query_subpasta = (
         f"'{pasta_usuario_id}' in parents and name = '{subpasta}' "
         f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -60,11 +60,11 @@ def listar_arquivos_por_usuario(tipo_documento, username):
 
     subpasta_id = subpastas[0]['id']
 
-    # Listar os arquivos dentro da subpasta com campos completos (name, id, link, size, modifiedTime)
+    # Listar os arquivos dentro da subpasta
     query_arquivos = f"'{subpasta_id}' in parents and trashed = false"
     resultado_arquivos = service.files().list(
         q=query_arquivos,
-        fields="files(id, name, webViewLink, modifiedTime, size)"
+        fields="files(id, name, webViewLink, createdTime, size)"
     ).execute()
 
     return resultado_arquivos.get('files', [])

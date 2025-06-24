@@ -16,51 +16,23 @@ def render_header():
 
     st.markdown(f"""
         <style>
-        .header-bar {{
+        .custom-header {{
             width: 100%;
             background-color: #0F2A4D;
-            padding: 10px 20px;
+            padding: 20px 0;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }}
 
-        .header-logo img {{
-            height: 60px;
+        .custom-header img {{
+            height: 80px;
             object-fit: contain;
         }}
-
-        .header-button button {{
-            background-color: white;
-            color: #0F2A4D;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }}
-
-        .header-button button:hover {{
-            background-color: #e0e0e0;
-        }}
         </style>
+
+        <div class="custom-header">
+            <img src="data:image/png;base64,{logo_base64}">
+        </div>
     """, unsafe_allow_html=True)
-
-    # Estrutura HTML da barra com logo e botão sair
-    st.markdown("<div class='header-bar'>", unsafe_allow_html=True)
-
-    # LOGO
-    st.markdown(
-        f"<div class='header-logo'><img src='data:image/png;base64,{logo_base64}'></div>",
-        unsafe_allow_html=True
-    )
-
-    # BOTÃO SAIR
-    with st.container():
-        col1, col2 = st.columns([8, 2])
-        with col2:
-            if st.button("🚪 Sair", key="header_logout"):
-                logout()
-
-    st.markdown("</div>", unsafe_allow_html=True)

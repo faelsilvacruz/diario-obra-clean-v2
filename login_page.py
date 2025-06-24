@@ -33,10 +33,29 @@ def render_login_page():
             font-weight: bold;
         }
 
-        label {
+        /* Labels dos campos (Usuário e Senha) */
+        label, .css-1cpxqw2, .css-14xtw13 {
+            color: white !important;
             font-weight: bold !important;
         }
 
+        /* Inputs */
+        input, textarea {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+            border: 2px solid #0F2A4D !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+        }
+
+        /* Placeholder dentro dos inputs */
+        input::placeholder, textarea::placeholder {
+            color: #555555 !important;
+            font-weight: bold !important;
+        }
+
+        /* Botões */
         button {
             background-color: #0F2A4D !important;
             color: white !important;

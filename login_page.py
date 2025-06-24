@@ -66,12 +66,8 @@ def render_login_page():
             background-color: #14406d !important;
         }
 
-        /* Centralizar a logo */
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 30px;
+        .main {
+            padding: 0 20px;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -105,11 +101,26 @@ def render_login_page():
     # ✅ Exibir logo centralizada ao final
     try:
         logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")
-        st.markdown("<div class='logo-container'>", unsafe_allow_html=True)
-        st.image(logo, use_container_width=False, width=300)
-        st.markdown("</div>", unsafe_allow_html=True)
+
+        # Redimensionar proporcionalmente se for muito grande
+        max_width = 300
+        if logo.width > max_width:
+            ratio = max_width / float(logo.width)
+            new_height = int(float(logo.height) * float(ratio))
+            logo = logo.resize((max_width, new_height), Image.LANCZOS)
+
+        # Adiciona um espaçamento antes da logo
+        st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+
+        # Centraliza a logo com columns
+        _, center_col, _ = st.columns([1, 2, 1])
+        with center_col:
+            st.image(logo, use_container_width=True, output_format="PNG")
+
+    except FileNotFoundError:
+        st.warning("Arquivo de logo não encontrado. Verifique o caminho: LOGO_RDV_AZUL-sem fundo.png")
     except Exception as e:
-        st.warning(f"Erro ao carregar a logo: {e}")
+        st.error(f"Erro ao carregar a logo: {str(e)}")
 
 def render_password_change_page():
     st.title("🔑 Alteração Obrigatória de Senha")

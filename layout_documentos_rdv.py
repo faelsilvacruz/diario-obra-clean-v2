@@ -10,44 +10,44 @@ def render_novo_layout_documentos():
     )
 
     # ===== CSS PERSONALIZADO =====
-st.markdown("""
-<style>
-.stExpander {
-    background-color: #2b2b2b !important;
-    color: white !important;
-    border: 1px solid #444444 !important;
-    border-radius: 8px !important;
-    padding: 10px !important;
-    margin-bottom: 10px !important;
-}
-
-.stExpander > summary {
-    background-color: #0F2A4D !important;
-    color: white !important;
-    border-radius: 8px !important;
-    padding: 10px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.stExpander div {
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-.stDownloadButton > button {
-    background-color: #0F2A4D !important;
-    color: white !important;
-    border-radius: 5px;
-    padding: 8px 16px;
-    border: none;
-}
-
-.stDownloadButton > button:hover {
-    background-color: #1c3a6d !important;
-}
-</style>
-""", unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .stExpander {
+        background-color: #2b2b2b !important;
+        color: white !important;
+        border: 1px solid #444444 !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .stExpander > summary {
+        background-color: #0F2A4D !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .stExpander div {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    
+    .stDownloadButton > button {
+        background-color: #0F2A4D !important;
+        color: white !important;
+        border-radius: 5px;
+        padding: 8px 16px;
+        border: none;
+    }
+    
+    .stDownloadButton > button:hover {
+        background-color: #1c3a6d !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 
     # ===== SIDEBAR =====

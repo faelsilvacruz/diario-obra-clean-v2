@@ -20,36 +20,21 @@ def render_login_page():
     st.markdown("""
         <style>
         .stApp {
-            background-color: #FFFFFF;
-            color: #000000;
+            background-color: #0F2A4D;
+            color: white;
         }
 
         .titulo-principal {
             text-align: center;
-            color: #0F2A4D;
+            color: white;
             font-size: 30px;
             margin-top: 40px;
             margin-bottom: 30px;
             font-weight: bold;
         }
 
-        input, textarea {
-            background-color: #FFFFFF !important;
-            color: #000000 !important;
-            font-weight: bold !important;
-            border: 2px solid #0F2A4D !important;
-            border-radius: 6px !important;
-            padding: 8px !important;
-        }
-
-        input::placeholder, textarea::placeholder {
-            color: #555555 !important;
-            font-weight: bold !important;
-        }
-
         label {
             font-weight: bold !important;
-            color: #0F2A4D !important;
         }
 
         button {
@@ -66,7 +51,7 @@ def render_login_page():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="titulo-principal">Acesso ao Diário de Obra</div>', unsafe_allow_html=True)
+    st.markdown('<div class="titulo-principal">Sistema RDV Engenharia</div>', unsafe_allow_html=True)
 
     username = st.text_input('Usuário')
     password = st.text_input('Senha', type='password')

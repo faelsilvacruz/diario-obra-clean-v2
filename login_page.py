@@ -100,7 +100,7 @@ def render_login_page():
     try:
         logo = Image.open("LOGO_RDV_AZUL.png")
         st.markdown("<br><div style='text-align: center;'>", unsafe_allow_html=True)
-        st.image(logo, use_column_width=False, width=200)
+        st.image(logo, use_container_width=False, width=200)
         st.markdown("</div>", unsafe_allow_html=True)
     except Exception as e:
         st.warning(f"Logo não encontrada ou erro ao carregar imagem: {e}")

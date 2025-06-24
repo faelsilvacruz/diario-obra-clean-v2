@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 from pytz import timezone
 
-def render_documentos_page():
+def render_novo_layout_documentos():
     st.set_page_config(
         layout="wide",
         page_title="Central de Documentos - RDV Engenharia",

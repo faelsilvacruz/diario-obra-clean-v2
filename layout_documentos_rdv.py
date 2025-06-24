@@ -2,15 +2,16 @@ import streamlit as st
 from datetime import datetime
 from pytz import timezone
 
+def limpar_nome_documento(nome_arquivo):
+    nome_sem_ext = nome_arquivo.replace('.pdf', '')
+    nome_espacado = nome_sem_ext.replace('_', ' ')
+    return nome_espacado
+
 def render_novo_layout_documentos():
     st.set_page_config(layout="centered", page_title="Central de Documentos - RDV Engenharia", page_icon="📂")
 
     st.markdown("""
     <style>
-        .expander-header {
-            font-weight: bold;
-            color: #0F2A4D;
-        }
         .stDownloadButton>button {
             background-color: #0F2A4D;
             color: white;
@@ -26,11 +27,14 @@ def render_novo_layout_documentos():
             border-left: 5px solid #0F2A4D;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .block-container .stContainer {
-            padding: 0px !important;
+            padding-top: 0px !important;
+        }
+        .stExpander {
+            margin: 0px !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -51,7 +55,6 @@ def render_novo_layout_documentos():
 
     st.title(f"📑 Documentos - {doc_type}")
 
-    # Simulação de documentos
     docs = [
         {"nome": "Holerite_Maio_2025.pdf", "data": "20/05/2025", "tamanho": "0.08 MB"},
         {"nome": "Holerite_Abril_2025.pdf", "data": "15/04/2025", "tamanho": "0.08 MB"},
@@ -60,11 +63,12 @@ def render_novo_layout_documentos():
 
     for doc in docs:
         st.markdown('<div class="document-card">', unsafe_allow_html=True)
-        with st.expander(f"📄 {doc['nome']}"):
-            st.markdown(f"📅 **Data:** {doc['data']}  \n📦 **Tamanho:** {doc['tamanho']}")
+        with st.expander(f"📄 {limpar_nome_documento(doc['nome'])}"):
+            st.markdown(f"📅 **Data:** {doc['data']}  
+📦 **Tamanho:** {doc['tamanho']}")
             st.download_button(
                 label="📥 Baixar Documento",
-                data="",  # Coloque os bytes reais aqui depois
+                data="",  # Coloque os bytes reais do arquivo aqui
                 file_name=doc['nome'],
                 key=doc['nome']
             )

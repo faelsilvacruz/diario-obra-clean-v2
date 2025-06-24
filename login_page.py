@@ -2,7 +2,7 @@ import streamlit as st
 import sqlite3
 import hashlib
 from PIL import Image
-from drive_users_db_utils import upload_users_db_to_drive  # Upload automático do banco após alteração de senha
+from drive_users_db_utils import upload_users_db_to_drive  # Upload automático do banco
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -35,13 +35,11 @@ def render_login_page():
             font-weight: bold;
         }
 
-        /* Labels (Usuário e Senha) */
         label, .css-1cpxqw2, .css-14xtw13 {
             color: white !important;
             font-weight: bold !important;
         }
 
-        /* Inputs */
         input, textarea {
             background-color: #FFFFFF !important;
             color: #000000 !important;
@@ -66,6 +64,14 @@ def render_login_page():
 
         button:hover {
             background-color: #14406d !important;
+        }
+
+        /* Centralizar a logo */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -96,14 +102,14 @@ def render_login_page():
         else:
             st.error('Usuário não encontrado.')
 
-    # ✅ Exibir logo centralizada no final da página de login
+    # ✅ Exibir logo centralizada ao final
     try:
-        logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")
-        st.markdown("<br><div style='text-align: center;'>", unsafe_allow_html=True)
-        st.image(logo, use_container_width=False, width=200)
+        logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")  # Nome exato da sua imagem na raiz
+        st.markdown("<div class='logo-container'>", unsafe_allow_html=True)
+        st.image(logo, width=250, use_container_width=False)
         st.markdown("</div>", unsafe_allow_html=True)
     except Exception as e:
-        st.warning(f"Logo não encontrada ou erro ao carregar imagem: {e}")
+        st.warning(f"Erro ao carregar a logo: {e}")
 
 def render_password_change_page():
     st.title("🔑 Alteração Obrigatória de Senha")

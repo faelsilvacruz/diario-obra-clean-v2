@@ -14,7 +14,7 @@ def logout():
 def render_header():
     st.markdown("""
         <style>
-        /* Remover margens padrão do Streamlit */
+        /* Remove margens padrão do Streamlit */
         .block-container {
             padding: 0 !important;
             margin: 0 !important;
@@ -25,25 +25,26 @@ def render_header():
             justify-content: space-between;
             align-items: center;
             background-color: #0F2A4D;
-            padding: 12px 24px;
+            padding: 20px 40px;
             width: 100%;
+            height: 120px; /* Altura da faixa azul */
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .header-logo img {
-            height: 50px;
+            height: 80px; /* Tamanho da logo */
         }
 
         .header-title {
             color: white;
-            font-size: 1.4rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: bold;
             margin: 0;
             white-space: nowrap;
         }
@@ -72,9 +73,8 @@ def render_header():
 
     st.markdown("<div class='header-container'>", unsafe_allow_html=True)
 
-    # Parte Esquerda: Logo + Título
+    # ==== Parte Esquerda: Logo + Nome ====
     st.markdown("<div class='header-left'>", unsafe_allow_html=True)
-
     try:
         logo_path = "LOGO_RDV_AZUL.png"
         logo_base64 = get_base64_of_bin_file(logo_path)
@@ -85,15 +85,15 @@ def render_header():
         """, unsafe_allow_html=True)
     except Exception as e:
         st.markdown("<div class='header-logo'></div>", unsafe_allow_html=True)
-        st.error(f"Erro ao carregar logo: {str(e)}")
+        st.error(f"Erro ao carregar a logo: {str(e)}")
 
     st.markdown("<div class='header-title'>Sistema RDV Engenharia</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)  # Fecha .header-left
+    st.markdown("</div>", unsafe_allow_html=True)  # Fecha header-left
 
-    # Parte Direita: Botão Sair
+    # ==== Parte Direita: Botão Sair ====
     st.markdown("<div class='header-logout'>", unsafe_allow_html=True)
     if st.button("🚪 Sair", key="header_logout"):
         logout()
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)  # Fecha .header-container
+    st.markdown("</div>", unsafe_allow_html=True)  # Fecha header-container

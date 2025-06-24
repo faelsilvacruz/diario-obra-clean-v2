@@ -16,22 +16,22 @@ def render_header():
 
     st.markdown(f"""
         <style>
-        .custom-header-container {{
+        .header-bar {{
             width: 100%;
             background-color: #0F2A4D;
-            padding: 16px 30px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }}
 
-        .custom-header-logo img {{
-            height: 80px;
+        .header-logo img {{
+            height: 60px;
             object-fit: contain;
         }}
 
-        .stButton>button {{
+        .header-button button {{
             background-color: white;
             color: #0F2A4D;
             border-radius: 6px;
@@ -41,25 +41,26 @@ def render_header():
             cursor: pointer;
         }}
 
-        .stButton>button:hover {{
+        .header-button button:hover {{
             background-color: #e0e0e0;
         }}
         </style>
     """, unsafe_allow_html=True)
 
-    # Container superior (logo + botão sair)
-    st.markdown("<div class='custom-header-container'>", unsafe_allow_html=True)
+    # Estrutura HTML da barra com logo e botão sair
+    st.markdown("<div class='header-bar'>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns([8, 2])
+    # LOGO
+    st.markdown(
+        f"<div class='header-logo'><img src='data:image/png;base64,{logo_base64}'></div>",
+        unsafe_allow_html=True
+    )
 
-    with col1:
-        st.markdown(
-            f"<div class='custom-header-logo'><img src='data:image/png;base64,{logo_base64}'></div>",
-            unsafe_allow_html=True
-        )
-
-    with col2:
-        if st.button("🚪 Sair", key="header_logout"):
-            logout()
+    # BOTÃO SAIR
+    with st.container():
+        col1, col2 = st.columns([8, 2])
+        with col2:
+            if st.button("🚪 Sair", key="header_logout"):
+                logout()
 
     st.markdown("</div>", unsafe_allow_html=True)

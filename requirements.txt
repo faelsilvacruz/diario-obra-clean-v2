@@ -8,3 +8,4 @@ pillow
 yagmail
 fpdf
 google-auth-httplib2
+pytz

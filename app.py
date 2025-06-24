@@ -7,6 +7,8 @@ from backup_page import render_backup_page
 from inspecionar_banco_page import render_inspecionar_banco_page
 from admin_page import render_admin_page
 from drive_users_db_utils import download_users_db_from_drive
+from layout_documentos_rdv import render_novo_layout_documentos
+
 
 def logout():
     for key in list(st.session_state.keys()):
@@ -44,7 +46,7 @@ def main():
 
         # ===== Menu de navegação =====
         if st.session_state.page != "alterar_senha":
-            col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+            col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
             st.write("---")
 
             user_role = st.session_state.get("role", "")
@@ -90,6 +92,11 @@ def main():
                 if st.button("🚪 Sair"):
                     logout()
 
+            with col8:
+                if st.button("🧪 Teste Layout Docs"):
+                    st.session_state.page = "teste_docs"
+                    st.rerun()
+
         # ===== Roteamento das páginas =====
         if st.session_state.page == "diario" and st.session_state.role in ["admin", "encarregado"]:
             render_diario_obra_page()
@@ -111,6 +118,9 @@ def main():
 
         elif st.session_state.page == "alterar_senha":
             render_password_change_page()
+
+        elif st.session_state.page == "teste_docs":
+            render_novo_layout_documentos()
 
 if __name__ == "__main__":
     main()

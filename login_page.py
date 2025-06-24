@@ -71,7 +71,7 @@ def render_login_page():
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 30px;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -104,9 +104,9 @@ def render_login_page():
 
     # ✅ Exibir logo centralizada ao final
     try:
-        logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")  # Nome exato da sua imagem na raiz
+        logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")
         st.markdown("<div class='logo-container'>", unsafe_allow_html=True)
-        st.image(logo, width=250, use_container_width=False)
+        st.image(logo, use_container_width=False, width=300)
         st.markdown("</div>", unsafe_allow_html=True)
     except Exception as e:
         st.warning(f"Erro ao carregar a logo: {e}")

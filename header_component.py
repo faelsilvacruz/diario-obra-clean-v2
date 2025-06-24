@@ -16,45 +16,47 @@ def render_header():
 
     st.markdown(f"""
         <style>
-        .rdv-header {{
+        .custom-header {{
             width: 100%;
             background-color: #0F2A4D;
-            padding: 10px 20px;
+            padding: 10px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }}
-
-        .rdv-header img {{
-            height: 50px;
+        .custom-header img {{
+            height: 60px;
             object-fit: contain;
         }}
-
-        .rdv-sair-form button {{
+        .logout-button-container {{
+            display: flex;
+            align-items: center;
+        }}
+        .logout-button-container button {{
             background-color: white !important;
             color: #0F2A4D !important;
-            border-radius: 6px !important;
-            padding: 6px 16px !important;
-            font-weight: bold !important;
-            border: none !important;
-            cursor: pointer !important;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 6px 18px;
+            border: none;
+            cursor: pointer;
         }}
-
-        .rdv-sair-form button:hover {{
+        .logout-button-container button:hover {{
             background-color: #e0e0e0 !important;
         }}
         </style>
+
+        <div class="custom-header">
+            <div><img src="data:image/png;base64,{logo_base64}" alt="Logo RDV"></div>
+            <div class="logout-button-container">
+                <form action="?logout" method="post">
+                    <button type="submit">🚪 Sair</button>
+                </form>
+            </div>
+        </div>
     """, unsafe_allow_html=True)
 
-    # Render faixa azul com logo à esquerda e botão sair à direita (com st.form invisível)
-    col1, col2 = st.columns([8, 1])
-
-    with col1:
-        st.markdown(f"<div class='rdv-header'><img src='data:image/png;base64,{logo_base64}'></div>", unsafe_allow_html=True)
-
-    with col2:
-        with st.form(key="logout_form"):
-            st.markdown("<div class='rdv-sair-form'>", unsafe_allow_html=True)
-            if st.form_submit_button("🚪 Sair"):
-                logout()
-            st.markdown("</div>", unsafe_allow_html=True)
+    # Detectar clique no botão manualmente
+    if st.query_params.get("logout") is not None:
+        logout()

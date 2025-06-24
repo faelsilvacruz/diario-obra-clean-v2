@@ -1,61 +1,52 @@
 import streamlit as st
-import base64
-
-def get_base64_of_bin_file(filepath):
-    with open(filepath, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+from header_component import render_header
+from datetime import datetime
 
 def logout():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
 
-def render_header():
-    logo_base64 = get_base64_of_bin_file("LOGO_RDV_AZUL.png")
+def render_diario_obra_page():
+    # ===== Header =====
+    render_header()
 
-    st.markdown(f"""
-        <style>
-        .custom-header-container {{
-            width: 100%;
-            background-color: #0F2A4D;
-            padding: 16px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }}
+    # ===== Conteúdo da Página: Diário de Obra =====
+    st.title("📓 Diário de Obra - RDV Engenharia")
 
-        .custom-header-logo img {{
-            height: 80px;
-            object-fit: contain;
-        }}
+    st.markdown("""
+    Nesta página você pode registrar as atividades diárias da obra, anexar fotos e gerar um resumo.
 
-        .stButton>button {{
-            background-color: white;
-            color: #0F2A4D;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }}
+    ---
+    """)
 
-        .stButton>button:hover {{
-            background-color: #e0e0e0;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+    # ===== Seletor de Data =====
+    data_diario = st.date_input("Data do Diário:", datetime.today())
 
-    # Renderizando o header com layout 2 colunas Streamlit (logo e botão)
-    col_logo, col_logout = st.columns([8, 2])
+    # ===== Campo de Texto: Atividades =====
+    atividades = st.text_area("Descreva as atividades realizadas no dia:")
 
-    with col_logo:
-        st.markdown(
-            f"<div class='custom-header-logo'><img src='data:image/png;base64,{logo_base64}'></div>",
-            unsafe_allow_html=True
-        )
+    # ===== Campo de Texto: Observações Extras =====
+    observacoes = st.text_area("Observações adicionais (opcional):")
 
-    with col_logout:
-        if st.button("🚪 Sair", key="header_logout"):
-            logout()
+    # ===== Upload de Fotos =====
+    fotos = st.file_uploader("📸 Anexe fotos da obra (JPG, PNG):", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+
+    # ===== Botão de Salvar =====
+    if st.button("✅ Salvar Diário de Obra"):
+        st.success(f"Diário de Obra de {data_diario.strftime('%d/%m/%Y')} salvo com sucesso!")
+
+        st.markdown("### ✅ Resumo do que foi preenchido:")
+        st.write(f"**Data:** {data_diario.strftime('%d/%m/%Y')}")
+        st.write(f"**Atividades:** {atividades}")
+
+        if observacoes:
+            st.write(f"**Observações:** {observacoes}")
+
+        if fotos:
+            st.write(f"**Fotos Anexadas:** {len(fotos)}")
+            for i, foto in enumerate(fotos, 1):
+                st.image(foto, caption=f"Foto {i}", width=300)
+
+    st.markdown("---")
+    st.info("👉 Em breve: Exportação em PDF e envio automático por e-mail.")

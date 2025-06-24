@@ -1,7 +1,8 @@
 import streamlit as st
 import sqlite3
 import hashlib
-from drive_users_db_utils import upload_users_db_to_drive  # Import do upload automático
+from PIL import Image
+from drive_users_db_utils import upload_users_db_to_drive  # Upload automático do banco após alteração de senha
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -34,7 +35,7 @@ def render_login_page():
             font-weight: bold;
         }
 
-        /* Labels dos campos (Usuário e Senha) */
+        /* Labels (Usuário e Senha) */
         label, .css-1cpxqw2, .css-14xtw13 {
             color: white !important;
             font-weight: bold !important;
@@ -50,13 +51,11 @@ def render_login_page():
             padding: 8px !important;
         }
 
-        /* Placeholder dentro dos inputs */
         input::placeholder, textarea::placeholder {
             color: #555555 !important;
             font-weight: bold !important;
         }
 
-        /* Botões */
         button {
             background-color: #0F2A4D !important;
             color: white !important;
@@ -96,6 +95,15 @@ def render_login_page():
                 st.error('Senha incorreta.')
         else:
             st.error('Usuário não encontrado.')
+
+    # ✅ Exibir logo centralizada no final da página de login
+    try:
+        logo = Image.open("LOGO_RDV_AZUL.png")
+        st.markdown("<br><div style='text-align: center;'>", unsafe_allow_html=True)
+        st.image(logo, use_column_width=False, width=200)
+        st.markdown("</div>", unsafe_allow_html=True)
+    except Exception as e:
+        st.warning(f"Logo não encontrada ou erro ao carregar imagem: {e}")
 
 def render_password_change_page():
     st.title("🔑 Alteração Obrigatória de Senha")

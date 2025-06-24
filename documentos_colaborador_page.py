@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-from drive_utils import listar_arquivos_por_usuario  # Ajuste se o nome do seu arquivo for diferente
+from drive_utils import listar_arquivos_por_usuario
 
 def render_documentos_colaborador_page():
     st.set_page_config(
@@ -10,7 +10,7 @@ def render_documentos_colaborador_page():
         initial_sidebar_state="expanded"
     )
 
-    # ===== CSS Customizado - Identidade Visual RDV =====
+    # CSS personalizado com identidade RDV
     st.markdown("""
     <style>
         :root {
@@ -105,16 +105,25 @@ def render_documentos_colaborador_page():
         st.error("Erro: Usuário não identificado na sessão.")
         return
 
-    # Campo de busca por nome de documento
+    # Campo de busca
     termo_busca = st.text_input("🔎 Buscar por nome do documento:")
 
-    # Busca real no Google Drive
+    # Buscar documentos do Google Drive
     with st.spinner(f"Carregando {opcao.lower()}..."):
         arquivos = listar_arquivos_por_usuario(opcao, username)
 
-    # Filtragem pelo termo de busca
+    # Filtro por nome
     if termo_busca:
         arquivos = [a for a in arquivos if termo_busca.lower() in a['name'].lower()]
+
+    # Ordenar do mais recente para o mais antigo
+    def parse_data(arquivo):
+        try:
+            return datetime.strptime(arquivo['modifiedTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        except:
+            return datetime.min
+
+    arquivos = sorted(arquivos, key=parse_data, reverse=True)
 
     if not arquivos:
         st.markdown("""
@@ -126,7 +135,7 @@ def render_documentos_colaborador_page():
         """, unsafe_allow_html=True)
         return
 
-    # Exibição de documentos em formato de card
+    # Exibir documentos como cards
     for arquivo in arquivos:
         nome_doc = arquivo['name']
         link = arquivo['webViewLink']

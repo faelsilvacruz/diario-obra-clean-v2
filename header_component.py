@@ -14,7 +14,7 @@ def logout():
 def render_header():
     logo_base64 = get_base64_of_bin_file("LOGO_RDV_AZUL.png")
 
-    header_html = f"""
+    st.markdown(f"""
         <style>
         .block-container {{
             padding: 0 !important;
@@ -37,40 +37,36 @@ def render_header():
             object-fit: contain;
         }}
 
-        .logout-button {{
+        .logout-button-container {{
             position: absolute;
             right: 30px;
             top: 30px;
         }}
 
-        .logout-button button {{
+        .stButton>button {{
             background-color: white;
             color: #0F2A4D;
             border-radius: 6px;
             padding: 8px 16px;
             font-weight: 600;
             border: none;
-            cursor: pointer;
         }}
 
-        .logout-button button:hover {{
+        .stButton>button:hover {{
             background-color: #e0e0e0;
         }}
         </style>
 
         <div class="custom-header">
             <img src="data:image/png;base64,{logo_base64}">
-            <div class="logout-button">
-                <form action="#" method="post">
-                    <button type="submit">🚪 Sair</button>
-                </form>
+            <div class="logout-button-container">
+                <!-- O botão real será renderizado pelo Streamlit abaixo -->
             </div>
         </div>
-    """
+    """, unsafe_allow_html=True)
 
-    # Exibe o header
-    st.markdown(header_html, unsafe_allow_html=True)
-
-    # Lógica do botão Sair
-    if st.form_submit_button("🚪 Sair"):
-        logout()
+    # Posiciona o botão Sair dentro da div "logout-button-container"
+    col1, col2, col3 = st.columns([8, 2, 1])
+    with col3:
+        if st.button("🚪 Sair", key="header_logout"):
+            logout()

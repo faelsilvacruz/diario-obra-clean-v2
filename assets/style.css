@@ -5,40 +5,28 @@
     font-family: 'Arial', sans-serif;
 }
 
-/* === Botões primários (exemplo: "Documentos", "Sair") === */
-button[kind="primary"] {
+/* === Botões Globais (Primários) === */
+button {
     background-color: #0F2A4D !important;
     color: white !important;
-    border-radius: 8px;
-    font-weight: bold;
-    padding: 8px 16px;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    padding: 8px 16px !important;
+    border: none !important;
 }
 
-button[kind="primary"]:hover {
+/* Hover dos botões */
+button:hover {
     background-color: #14406d !important;
     color: white !important;
+    border: none !important;
 }
 
-/* === Botões secundários (se tiver) === */
-button[kind="secondary"] {
-    background-color: #F5F5F5 !important;
+/* === Checkboxes, Radio Buttons, etc === */
+input[type="radio"] + label,
+input[type="checkbox"] + label {
     color: #0F2A4D !important;
-    border-radius: 8px;
     font-weight: bold;
-    padding: 8px 16px;
-}
-
-button[kind="secondary"]:hover {
-    background-color: #D9D9D9 !important;
-    color: #0F2A4D !important;
-}
-
-/* === Containers / Caixas === */
-.stContainer {
-    background-color: #F5F5F5 !important;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
 }
 
 /* === Títulos === */
@@ -50,4 +38,42 @@ h1, h2, h3 {
 a {
     color: #0F2A4D !important;
     font-weight: bold;
+}
+
+/* === Containers / Blocos / Accordion === */
+.stContainer {
+    background-color: #F5F5F5 !important;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* === Accordion Expanders === */
+.st-expanderHeader {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* === Corrigindo textos dentro de botões Streamlit forms e submit === */
+.stButton > button {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+}
+
+.stButton > button:hover {
+    background-color: #14406d !important;
+}
+
+/* === Radios (Fundo mais visível quando selecionado) === */
+.stRadio > div > label {
+    background-color: #F5F5F5 !important;
+    border-radius: 5px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    display: block;
 }

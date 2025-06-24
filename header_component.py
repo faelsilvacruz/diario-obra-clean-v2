@@ -16,23 +16,50 @@ def render_header():
 
     st.markdown(f"""
         <style>
-        .custom-header {{
+        .custom-header-container {{
             width: 100%;
             background-color: #0F2A4D;
-            padding: 20px 0;
+            padding: 16px 30px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }}
 
-        .custom-header img {{
+        .custom-header-logo img {{
             height: 80px;
             object-fit: contain;
         }}
-        </style>
 
-        <div class="custom-header">
-            <img src="data:image/png;base64,{logo_base64}">
-        </div>
+        .stButton>button {{
+            background-color: white;
+            color: #0F2A4D;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }}
+
+        .stButton>button:hover {{
+            background-color: #e0e0e0;
+        }}
+        </style>
     """, unsafe_allow_html=True)
+
+    # Container superior (logo + botão sair)
+    st.markdown("<div class='custom-header-container'>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([8, 2])
+
+    with col1:
+        st.markdown(
+            f"<div class='custom-header-logo'><img src='data:image/png;base64,{logo_base64}'></div>",
+            unsafe_allow_html=True
+        )
+
+    with col2:
+        if st.button("🚪 Sair", key="header_logout"):
+            logout()
+
+    st.markdown("</div>", unsafe_allow_html=True)

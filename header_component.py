@@ -15,8 +15,8 @@ def render_header():
             align-items: center;
             background-color: #0F2A4D;
             padding: 10px 20px;
-            border-radius: 8px;
             margin-bottom: 20px;
+            border-radius: 0;
         }
         .header-title {
             color: white;
@@ -40,11 +40,13 @@ def render_header():
         </style>
     """, unsafe_allow_html=True)
 
+    st.markdown("<div class='header-container'>", unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns([1, 6, 1])
 
     with col1:
         try:
-            logo = Image.open("LOGO_RDV_AZUL-sem fundo.png")
+            logo = Image.open("LOGO_RDV_AZUL.png")  # 👉 Use a logo com fundo visível (azul ou branco)
             st.image(logo, use_container_width=False, width=80)
         except:
             st.write("")
@@ -53,5 +55,8 @@ def render_header():
         st.markdown("<div class='header-title'>Sistema RDV Engenharia</div>", unsafe_allow_html=True)
 
     with col3:
-        if st.button("🚪 Sair", key="header_logout"):
-            logout()
+        with st.container():
+            if st.button("🚪 Sair", key="header_logout"):
+                logout()
+
+    st.markdown("</div>", unsafe_allow_html=True)

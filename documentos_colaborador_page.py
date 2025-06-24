@@ -3,7 +3,7 @@ from datetime import datetime
 import re
 from drive_utils import listar_arquivos_por_usuario
 from pytz import timezone
-from header_component import render_header
+from header_component import render_header  # ✅ Import do cabeçalho
 
 def formatar_nome_arquivo(nome_arquivo):
     nome_sem_extensao = nome_arquivo.replace(".pdf", "")
@@ -54,6 +54,9 @@ def render_documentos_colaborador_page():
         layout="wide",
         initial_sidebar_state="expanded"
     )
+
+    # ✅ Chamada do cabeçalho global
+    render_header()
 
     st.markdown("""
     <style>

@@ -100,8 +100,5 @@ def main():
         elif st.session_state.page == "alterar_senha":
             render_password_change_page()
 
-        elif st.session_state.page == "teste_docs":
-            render_novo_layout_documentos()
-
 if __name__ == "__main__":
     main()

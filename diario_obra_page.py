@@ -17,6 +17,7 @@ def render_diario_obra_page():
             st.error(f"Erro ao ler o arquivo '{nome_arquivo}': {e}")
             return pd.DataFrame()
 
+    # ===== Carregar Dados =====
     obras_df = carregar_arquivo_csv("obras.csv")
     contratos_df = carregar_arquivo_csv("contratos.csv")
     colab_df = pd.DataFrame()
@@ -40,16 +41,21 @@ def render_diario_obra_page():
     obras_lista = [""] + obras_df["Nome"].tolist()
     contratos_lista = [""] + contratos_df["Nome"].tolist()
 
-    st.title("Relatório Diário de Obra - RDV Engenharia")
+    # ===== Layout: Dados da Obra =====
+    st.markdown("## 📋 Dados da Obra")
     obra = st.selectbox("Obra", obras_lista)
     local = st.text_input("Local")
     data = st.date_input("Data", datetime.today())
     contrato = st.selectbox("Contrato", contratos_lista)
     clima = st.selectbox("Condições do dia", ["Bom", "Chuva", "Garoa", "Impraticável", "Feriado", "Guarda"])
+
+    # ===== Layout: Maquinário e Serviços =====
+    st.markdown("## 🛠️ Máquinas e Serviços")
     maquinas = st.text_area("Máquinas e equipamentos utilizados")
     servicos = st.text_area("Serviços executados no dia")
 
-    st.subheader("Efetivo de Pessoal")
+    # ===== Layout: Efetivo =====
+    st.markdown("## 👷‍♂️ Efetivo de Pessoal")
     max_colabs = len(colaboradores_lista) if colaboradores_lista else 8
     qtd_colaboradores = st.number_input("Quantos colaboradores hoje?", min_value=1, max_value=max_colabs, value=1, step=1)
     efetivo_lista = []
@@ -70,20 +76,26 @@ def render_diario_obra_page():
                 saida = col2.time_input("Saída", value=datetime.strptime("17:00", "%H:%M").time(), key=f"saida_{i}")
                 efetivo_lista.append([nome, funcao, entrada.strftime("%H:%M"), saida.strftime("%H:%M")])
 
-    st.subheader("Controle de Documentação de Segurança")
+    # ===== Layout: Documentação de Segurança =====
+    st.markdown("## 🔐 Controle de Documentação de Segurança")
     col1, col2 = st.columns(2)
     hora_lt = col1.time_input("Hora de Liberação da LT", value=datetime.strptime("07:00", "%H:%M").time())
     hora_apr = col2.time_input("Hora de Liberação da APR", value=datetime.strptime("07:00", "%H:%M").time())
     data_apr = st.date_input("Data da APR", value=datetime.today())
     numero_apr = st.text_input("Número/Código da APR")
 
-    st.subheader("Informações Adicionais")
+    # ===== Layout: Intercorrências e Responsáveis =====
+    st.markdown("## 📝 Informações Adicionais")
     ocorrencias = st.text_area("Ocorrências")
     nome_empresa = st.text_input("Responsável Técnico")
     nome_fiscal = st.text_input("Fiscalização")
-    fotos = st.file_uploader("Fotos do serviço", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
 
-    if st.button("Salvar e Gerar Relatório"):
+    # ===== Layout: Fotos =====
+    st.markdown("## 📸 Fotos do Serviço")
+    fotos = st.file_uploader("Anexe as fotos (JPG, PNG)", accept_multiple_files=True, type=["png", "jpg", "jpeg"])
+
+    # ===== Botão Final =====
+    if st.button("✅ Salvar e Gerar Relatório"):
         if not obra:
             st.error("Por favor, selecione a Obra.")
             st.stop()

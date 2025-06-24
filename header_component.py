@@ -53,5 +53,5 @@ def render_header():
         st.markdown("<div class='header-title'>Sistema RDV Engenharia</div>", unsafe_allow_html=True)
 
     with col3:
-        if st.button("🚪 Sair"):
+        if st.button("🚪 Sair", key="header_logout"):
             logout()

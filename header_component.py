@@ -30,32 +30,31 @@ def render_header():
             object-fit: contain;
         }}
 
-        .rdv-header button {{
-            background-color: white;
-            color: #0F2A4D;
-            border-radius: 6px;
-            padding: 6px 16px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
+        .rdv-sair-form button {{
+            background-color: white !important;
+            color: #0F2A4D !important;
+            border-radius: 6px !important;
+            padding: 6px 16px !important;
+            font-weight: bold !important;
+            border: none !important;
+            cursor: pointer !important;
         }}
 
-        .rdv-header button:hover {{
-            background-color: #e0e0e0;
+        .rdv-sair-form button:hover {{
+            background-color: #e0e0e0 !important;
         }}
         </style>
-
-        <div class="rdv-header">
-            <img src="data:image/png;base64,{logo_base64}">
-            <form action="" method="post">
-                <button type="submit">🚪 Sair</button>
-            </form>
-        </div>
     """, unsafe_allow_html=True)
 
-    # Capturar clique no botão Sair
-    if "sair_clicked" not in st.session_state:
-        st.session_state.sair_clicked = False
+    # Render faixa azul com logo à esquerda e botão sair à direita (com st.form invisível)
+    col1, col2 = st.columns([8, 1])
 
-    if st.form_submit_button("Sair", key="logout_button", help="Clique para sair"):
-        logout()
+    with col1:
+        st.markdown(f"<div class='rdv-header'><img src='data:image/png;base64,{logo_base64}'></div>", unsafe_allow_html=True)
+
+    with col2:
+        with st.form(key="logout_form"):
+            st.markdown("<div class='rdv-sair-form'>", unsafe_allow_html=True)
+            if st.form_submit_button("🚪 Sair"):
+                logout()
+            st.markdown("</div>", unsafe_allow_html=True)

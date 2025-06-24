@@ -15,23 +15,32 @@ def logout():
 def render_header():
     st.markdown("""
         <style>
+        /* Remove o padding lateral padrão do Streamlit */
+        .block-container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: #0F2A4D;
             padding: 12px 24px;
-            margin: -1rem -1rem 1.5rem -1rem;
+            width: 100%;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
         .header-left {
             display: flex;
             align-items: center;
             gap: 15px;
         }
+
         .header-logo img {
             height: 50px;
         }
+
         .header-title {
             color: white;
             font-size: 1.4rem;
@@ -39,6 +48,12 @@ def render_header():
             margin: 0;
             white-space: nowrap;
         }
+
+        .header-logout {
+            display: flex;
+            align-items: center;
+        }
+
         .header-logout button {
             background-color: white !important;
             color: #0F2A4D !important;
@@ -48,6 +63,7 @@ def render_header():
             border: none;
             transition: all 0.3s ease;
         }
+
         .header-logout button:hover {
             background-color: #e0e0e0 !important;
             transform: translateY(-1px);
@@ -57,11 +73,10 @@ def render_header():
 
     st.markdown("<div class='header-container'>", unsafe_allow_html=True)
 
-    # Parte Esquerda: Logo + Título
+    # Parte Esquerda: Logo + Nome
     st.markdown("<div class='header-left'>", unsafe_allow_html=True)
-
     try:
-        logo_path = "LOGO_RDV_AZUL.png"  # Ajuste o caminho se necessário
+        logo_path = "LOGO_RDV_AZUL.png"
         logo_base64 = get_base64_of_bin_file(logo_path)
         st.markdown(f"""
             <div class='header-logo'>
@@ -70,9 +85,9 @@ def render_header():
         """, unsafe_allow_html=True)
     except Exception as e:
         st.markdown("<div class='header-logo'></div>", unsafe_allow_html=True)
-        st.error(f"Erro ao carregar logo: {str(e)}")
+        st.error(f"Erro ao carregar a logo: {str(e)}")
 
-    st.markdown("<h1 class='header-title'>Sistema RDV Engenharia</h1>", unsafe_allow_html=True)
+    st.markdown("<div class='header-title'>Sistema RDV Engenharia</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)  # Fecha header-left
 
     # Parte Direita: Botão Sair

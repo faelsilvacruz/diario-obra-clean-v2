@@ -10,52 +10,45 @@ def render_novo_layout_documentos():
     )
 
     # ===== CSS PERSONALIZADO =====
-    st.markdown("""
-    <style>
-    /* Remover fundo branco dos expanders */
-    .stExpander {
-        background-color: #1e1e1e !important;
-        color: white !important;
-        border: 1px solid #333333 !important;
-        border-radius: 8px !important;
-        padding: 10px !important;
-        margin-bottom: 10px !important;
-    }
+st.markdown("""
+<style>
+.stExpander {
+    background-color: #2b2b2b !important;
+    color: white !important;
+    border: 1px solid #444444 !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    margin-bottom: 10px !important;
+}
 
-    /* Cabeçalho do expander */
-    .stExpander > summary {
-        background-color: #0F2A4D !important;
-        color: white !important;
-        border-radius: 8px !important;
-        padding: 8px !important;
-        cursor: pointer;
-    }
+.stExpander > summary {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-    /* Tamanho da fonte dentro dos expanders */
-    .stExpander div {
-        font-size: 0.9rem;
-    }
+.stExpander div {
+    font-size: 1rem;
+    line-height: 1.5;
+}
 
-    /* Personalização do botão de download */
-    .stDownloadButton > button {
-        background-color: #0F2A4D !important;
-        color: white !important;
-        border-radius: 5px;
-        padding: 8px 16px;
-        border: none;
-    }
+.stDownloadButton > button {
+    background-color: #0F2A4D !important;
+    color: white !important;
+    border-radius: 5px;
+    padding: 8px 16px;
+    border: none;
+}
 
-    .stDownloadButton > button:hover {
-        background-color: #1c3a6d !important;
-    }
+.stDownloadButton > button:hover {
+    background-color: #1c3a6d !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
-    /* Remover margens e paddings desnecessários */
-    .block-container {
-        padding-top: 0px;
-        padding-bottom: 0px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     # ===== SIDEBAR =====
     with st.sidebar:

@@ -28,8 +28,6 @@ def main():
     # ===== Download automático do banco de usuários =====
     download_users_db_from_drive()
 
-    # ===== Estilo visual do app =====
-    
     # ===== Login =====
     if "logged_in" not in st.session_state or not st.session_state.logged_in:
         render_login_page()
@@ -39,7 +37,7 @@ def main():
 
         # ===== Menu de navegação =====
         if st.session_state.page != "alterar_senha":
-            col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
             st.write("---")
 
             user_role = st.session_state.get("role", "")
@@ -80,15 +78,6 @@ def main():
                     if st.button("⚙️ Administração"):
                         st.session_state.page = "admin"
                         st.rerun()
-
-            with col7:
-                if st.button("🚪 Sair"):
-                    logout()
-
-            with col8:
-                if st.button("🧪 Teste Layout Docs"):
-                    st.session_state.page = "teste_docs"
-                    st.rerun()
 
         # ===== Roteamento das páginas =====
         if st.session_state.page == "diario" and st.session_state.role in ["admin", "encarregado"]:

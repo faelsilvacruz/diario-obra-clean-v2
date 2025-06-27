@@ -14,28 +14,20 @@ def logout():
 def render_header():
     logo_base64 = get_base64_of_bin_file("LOGO_RDV_AZUL.png")
 
-    st.markdown(f"""
+    st.markdown("""
         <style>
-        .custom-header {{
-            width: 100%;
+        .header-container {
             background-color: #0F2A4D;
-            padding: 16px 30px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .header-img {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }}
-        .logo-center {{
-            flex: 1;
-            display: flex;
             justify-content: center;
-            align-items: center;
-        }}
-        .logo-center img {{
-            height: 60px;
-            object-fit: contain;
-        }}
-        .logout-button-container button {{
+        }
+        .logout-button button {
             background-color: white !important;
             color: #0F2A4D !important;
             font-weight: bold;
@@ -43,23 +35,24 @@ def render_header():
             padding: 6px 18px;
             border: none;
             cursor: pointer;
-        }}
-        .logout-button-container button:hover {{
+        }
+        .logout-button button:hover {
             background-color: #e0e0e0 !important;
-        }}
+        }
         </style>
-
-        <div class="custom-header">
-            <div class="logo-center">
-                <img src="data:image/png;base64,{logo_base64}" alt="Logo RDV">
-            </div>
-            <div class="logout-button-container">
-                <form action="?logout" method="post">
-                    <button type="submit">🚪 Sair</button>
-                </form>
-            </div>
-        </div>
     """, unsafe_allow_html=True)
 
-    if st.query_params.get("logout") is not None:
-        logout()
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.markdown(f"""
+            <div class="header-container header-img">
+                <img src="data:image/png;base64,{logo_base64}" alt="Logo RDV" style="height: 60px;" />
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        with st.container():
+            st.markdown('<div class="logout-button">', unsafe_allow_html=True)
+            if st.button("🚪 Sair"):
+                logout()
+            st.markdown('</div>', unsafe_allow_html=True)

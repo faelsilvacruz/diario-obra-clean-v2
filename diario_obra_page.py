@@ -102,6 +102,8 @@ def load_colaboradores() -> pd.DataFrame:
 # ================
 
 def render_diario_obra_page():
+    st.warning("VERSÃO DEBUG 18/NOV – GitHub sincronizado")
+
     st.markdown("## 📓 Diário de Obra")
 
     # Botão para limpar cache e recarregar dados
